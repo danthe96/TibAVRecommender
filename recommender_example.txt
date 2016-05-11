@@ -1,0 +1,40 @@
+C:\Users\danth\OneDrive\HPI\Material\SS 2016\Knowledge Mining\TibAVRecommender>python27 recommendation.py 14270
+Original video:
+video                                  videoname                                             authorname    coursename
+-------------------------------------  ----------------------------------------------------  ------------  ------------------------------------
+http://av.tib.eu/resource/video/14270  03 Semantic Web Technologien - RDFS, RDFa und SPARQL  Sack, Harald  Semantic Web Technologien WS 2011/12
+1 result(s)
+
+=========================================================
+RECOMMENDATIONS
+=========================================================
+1. (Score: 1.3)
+video                                  videoname                                               authorname    coursename
+-------------------------------------  ------------------------------------------------------  ------------  ------------------------------------
+http://av.tib.eu/resource/video/14273  12 Semantic Web Technologien - Linked Data Engineering  Sack, Harald  Semantic Web Technologien WS 2011/12
+1 result(s)
+
+2. (Score: 1.3)
+video                                  videoname                                            authorname    coursename
+-------------------------------------  ---------------------------------------------------  ------------  ------------------------------------
+http://av.tib.eu/resource/video/14271  08 Semantic Web Technologien - OWL und OWL Semantik  Sack, Harald  Semantic Web Technologien WS 2011/12
+1 result(s)
+
+3. (Score: 1)
+video                                  videoname                                  authorname    coursename
+-------------------------------------  -----------------------------------------  ------------  ------------------------------------
+http://av.tib.eu/resource/video/14272  01 Semantic Web Technologien - Einführung  Sack, Harald  Semantic Web Technologien WS 2011/12
+http://av.tib.eu/resource/video/14272  01 Semantic Web Technologien - Einführung  Sack, Harald  Semantic Web Technologien WS 2011/12
+2 result(s)
+
+4. (Score: 0.3)
+video                                  videoname                                                authorname    coursename
+-------------------------------------  -------------------------------------------------------  ------------  ------------------------------------
+http://av.tib.eu/resource/video/14282  01 Semantic Web Technologien - From Internet to Web 2.0  Sack, Harald  Semantic Web Technologien WS 2012/13
+1 result(s)
+
+5. (Score: 0.3)
+video                                  videoname                                  authorname    coursename
+-------------------------------------  -----------------------------------------  ------------  ------------------------------------
+http://av.tib.eu/resource/video/14283  05 Semantic Web Technologien - Ontologies  Sack, Harald  Semantic Web Technologien WS 2012/13
+1 result(s)
