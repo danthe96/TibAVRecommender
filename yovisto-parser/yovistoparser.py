@@ -8,11 +8,10 @@ sources = []
 
 f = open('yovistoextract.ttl', 'w')
 
-for i in range(2):
-	sources.append(entries[i]["link"])
+for entry in entries:
+	sources.append(entry["link"])
 
 for source in sources:
-	print source
-f.write(pyRdfa().rdf_from_sources(sources))
+	f.write(pyRdfa().rdf_from_source(source))
 
 f.close()
