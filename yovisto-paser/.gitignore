@@ -1,0 +1,7 @@
+*.pyc
+.tox/
+dist/
+env/
+feedparser.egg-info/
+*.ttl
+build/
