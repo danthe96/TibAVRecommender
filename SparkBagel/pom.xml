@@ -1,11 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>spark-scala-maven-project</groupId>
-	<artifactId>spark-scala-maven-project</artifactId>
-	<version>0.0.1</version>
+	<groupId>knowmin-tibav</groupId>
+	<artifactId>knowmin-tibav</artifactId>
+	<version>0.0.2</version>
 	<name>${project.artifactId}</name>
-	<description>This is a boilerplate maven project to start using Spark in Scala</description>
 	<inceptionYear>2010</inceptionYear>
 
 	<properties>
@@ -15,8 +14,12 @@
 		<scala.tools.version>2.10</scala.tools.version>
 		<!-- Put the Scala version of the cluster -->
 		<scala.version>2.10.6</scala.version>
+
+		<timestamp>${maven.build.timestamp}</timestamp>
+		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+		
 	</properties>
-	
+
 	<!-- repository to add org.apache.spark -->
 	<repositories>
 		<repository>
@@ -63,6 +66,12 @@
 						<include>**/*Test.*</include>
 						<include>**/*Suite.*</include>
 					</includes>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+						</manifest>
+					</archive>
 				</configuration>
 			</plugin>
 
@@ -86,6 +95,14 @@
 				</executions>
 			</plugin>
 		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+
 	</build>
 
 	<dependencies>
@@ -101,6 +118,12 @@
 			<version>1.6.1</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-graphx_2.10</artifactId>
+			<version>1.6.1</version>
+		</dependency>
 	</dependencies>
+	<description>Recommender system for av.tib.eu, part of the Knowledge Mining seminar at HPI.</description>
 </project>
 
