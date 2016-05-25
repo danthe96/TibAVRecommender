@@ -25,11 +25,11 @@ object Main {
   }
 
   def main(args: Array[String]) {
-    if (args.length != 1) {
+    /*if (args.length != 1) {
       System.err.println(
         "Should be one parameter: <path/to/edges>")
       System.exit(1)
-    }
+    }*/
 
     val conf = new SparkConf()
       .setAppName("KnowMin-TIBAV")
@@ -100,8 +100,8 @@ object Main {
 
     
     var edges: RDD[Edge[Double]] = typeEdges
-    edges ++ dbpediaEdges
-    edges ++ videoEdges
+    edges = edges ++ dbpediaEdges
+    edges = edges ++ videoEdges
     val nodes: RDD[(VertexId, String)] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, e1) })
     val graph: Graph[String, Double] = Graph(nodes, edges)
 
