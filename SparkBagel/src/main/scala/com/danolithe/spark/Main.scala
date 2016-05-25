@@ -35,29 +35,73 @@ object Main {
 
     val sc = new SparkContext(conf)
     
-    var videoMap:Map[String, Long] = Map()
+    var entityMap:Map[String, Long] = Map()
     var index:Long = 0
 
-    val edges: RDD[Edge[Double]] =
-      sc.textFile("../data/input.txt").flatMap { line =>
+    val typeEdges: RDD[Edge[Double]] =
+      sc.textFile("../data/DBPedia_types_filtered_count.txt").flatMap { line =>
         val fields = line.split(" ")
         
-        if(videoMap.contains(fields(0)) == false) {
-          videoMap += (fields(0) -> index)
+        if(entityMap.contains(fields(0)) == false) {
+          entityMap += (fields(0) -> index)
           index += 1
         }
         
-        if(videoMap.contains(fields(1)) == false) {
-          videoMap += (fields(1) -> index)
+        if(entityMap.contains(fields(1)) == false) {
+          entityMap += (fields(1) -> index)
           index += 1
         }
         
         List(
-            Edge(videoMap.apply(fields(0)), videoMap.apply(fields(1)), 1/(fields(2).toDouble)),
-            Edge(videoMap.apply(fields(0)), videoMap.apply(fields(1)), 1/(fields(2).toDouble))
+            Edge(entityMap.apply(fields(0)), entityMap.apply(fields(1)), 1/(fields(2).toDouble)),
+            Edge(entityMap.apply(fields(1)), entityMap.apply(fields(0)), 1/(fields(2).toDouble))
+            )
+      }
+    
+      val dbpediaEdges: RDD[Edge[Double]] =
+      sc.textFile("../data/gnd_DBpedia_filtered.txt").flatMap { line =>
+        val fields = line.split(" ")
+        
+        if(entityMap.contains(fields(0)) == false) {
+          entityMap += (fields(0) -> index)
+          index += 1
+        }
+        
+        if(entityMap.contains(fields(1)) == false) {
+          entityMap += (fields(1) -> index)
+          index += 1
+        }
+        
+        List(
+            Edge(entityMap.apply(fields(0)), entityMap.apply(fields(1)), 1),
+            Edge(entityMap.apply(fields(1)), entityMap.apply(fields(0)), 1)
+            )
+      }
+      
+      val videoEdges: RDD[Edge[Double]] =
+      sc.textFile("../data/tib_gnd_sorted_count.txt").flatMap { line =>
+        val fields = line.split(" ")
+        
+        if(entityMap.contains(fields(0)) == false) {
+          entityMap += (fields(0) -> index)
+          index += 1
+        }
+        
+        if(entityMap.contains(fields(1)) == false) {
+          entityMap += (fields(1) -> index)
+          index += 1
+        }
+        
+        List(
+            Edge(entityMap.apply(fields(0)), entityMap.apply(fields(1)), fields(2).toDouble/fields(3).toDouble),
+            Edge(entityMap.apply(fields(1)), entityMap.apply(fields(0)), fields(2).toDouble/fields(3).toDouble)
             )
       }
 
+    
+    var edges: RDD[Edge[Double]] = typeEdges
+    edges ++ dbpediaEdges
+    edges ++ videoEdges
     val graph: Graph[Any, Double] = Graph.fromEdges(edges, 0.0)
 
     println("num edges = " + graph.numEdges);
