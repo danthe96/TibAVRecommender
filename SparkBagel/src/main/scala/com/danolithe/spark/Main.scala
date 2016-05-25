@@ -8,6 +8,13 @@ import org.apache.spark.SparkConf
 import org.apache.log4j.Logger
 import java.util.Properties
 import org.apache.spark.storage.StorageLevel
+import java.util.ArrayList
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import java.util.TreeSet
+import java.util.concurrent.ConcurrentSkipListSet
+import java.util.HashMap
+
 
 object Main {
 
@@ -16,7 +23,7 @@ object Main {
     val loader = Thread.currentThread().getContextClassLoader()
     val stream = loader.getResourceAsStream("version.txt")
     prop.load(stream);
-    prop.getProperty("version") + "_output"
+    prop.getProperty("version") + "_output/"
   }
 
   def main(args: Array[String]) {
@@ -26,16 +33,13 @@ object Main {
       System.exit(1)
     }
 
-    var logger = Logger.getLogger(this.getClass())
-
     val conf = new SparkConf()
-      .setAppName("Load graph")
+      .setAppName("KnowMin-TIBAV")
       .setSparkHome(System.getenv("SPARK_HOME"))
-      .setJars(SparkContext.jarOfClass(this.getClass).toList)
-
+      .setJars(SparkContext.jarOfClass(this.getClass).toList)            
     val sc = new SparkContext(conf)
     
-    var entityMap:Map[String, Long] = Map()
+    var entityMap:HashMap[String, Long] = new HashMap()
     var index:Long = 0
 
     val typeEdges: RDD[Edge[Double]] =
@@ -104,11 +108,12 @@ object Main {
     edges ++ videoEdges
     val graph: Graph[Any, Double] = Graph.fromEdges(edges, 0.0)
 
-    println("num edges = " + graph.numEdges);
-    println("num vertices = " + graph.numVertices);
 
-    graph.vertices.saveAsObjectFile(OUTPUT_PATH)
-    graph.edges.saveAsObjectFile(OUTPUT_PATH)
+    println("num edges = " + graph.numEdges);
+    println("num vertices = " + graph.numVertices);   
+    
+    graph.vertices.saveAsTextFile(OUTPUT_PATH + "vertices")
+    graph.edges.saveAsTextFile(OUTPUT_PATH + "edges")
 
   }
 }
