@@ -11,8 +11,9 @@ def printResult(data):
 			line += [res.get(key, dict()).get('value', None)]
 		results += [line]
 
-	print tabulate(results, headers=data['head']['vars'])
+	string = tabulate(results, headers=data['head']['vars'])
 	print str(len(results)) + ' result(s)'
+	return string
 
 def processResult(data):
 	results = list()

@@ -5,12 +5,12 @@ import collections
 
 
 def recommend():
-	i = 0
 	with open ("results.txt", "w") as outfile:
-		with open ("queries/subject_query.txt", "r") as f:
-			video_query = f.read()
-			original_video = recommender.server.query(video_query + (i * 10000))
-			outfile.write(recommender.processResult(original_video))
+		for i in range(10):
+			with open ("queries/subject_query.txt", "r") as f:
+				video_query = f.read()
+				original_video = recommender.server.query(video_query + str(i * 10000))
+				outfile.write(recommender.printResult(original_video).encode('utf-8'))
 
 	
 
