@@ -37,14 +37,16 @@ object Main {
       .setJars(SparkContext.jarOfClass(this.getClass).toList)
     val sc = new SparkContext(conf)
 
+
     val logger = Logger.getLogger(this.getClass())
 
     var id = 0
     var nodeNames = HashMap[String, Long]()
-    val edges: RDD[Edge[Long]] =
-      sc.textFile(args(0)).map { line =>
-        val fields: Array[String] = line.split(" ")
 
+    val typeEdges: RDD[Edge[Double]] =
+      sc.textFile("../data/DBPedia_types_filtered_count.txt").flatMap { line =>
+        val fields = line.split(" ")
+        
         val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
           id += 1
           id - 1
@@ -53,13 +55,57 @@ object Main {
           id += 1
           id - 1
         })
-
-        Edge(vertexId1, vertexId2, fields(2).toLong)
+        List(
+          Edge(vertexId1, vertexId2, fields(2).toDouble),
+          Edge(vertexId2, vertexId1, fields(2).toDouble)
+          )
       }
-    val nodes: RDD[(VertexId, String)] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, e1) })
-    println(edges.count())
+    
+      val dbpediaEdges: RDD[Edge[Double]] =
+      sc.textFile("../data/gnd_DBpedia_filtered.txt").flatMap { line =>
+        val fields = line.split(" ")
+        
+        val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+          id += 1
+          id - 1
+        })
+        val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+          id += 1
+          id - 1
+        })
+        List(
+          Edge(vertexId1, vertexId2, 1),
+          Edge(vertexId2, vertexId1, 1)
+          )
+      }
+      
+      val videoEdges: RDD[Edge[Double]] =
+      sc.textFile("../data/tib_gnd_sorted_count.txt").flatMap { line =>
+        val fields = line.split(" ")
+        
+        val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+          id += 1
+          id - 1
+        })
+        val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+          id += 1
+          id - 1
+        })
+        List(
+          Edge(vertexId1, vertexId2, fields(2).toDouble/fields(3).toDouble),
+          Edge(vertexId2, vertexId1, fields(2).toDouble/fields(3).toDouble)
+          )
+      }        
 
-    val graph: Graph[String, Long] = Graph(nodes, edges)
+
+    
+    var edges: RDD[Edge[Double]] = typeEdges
+    edges ++ dbpediaEdges
+    edges ++ videoEdges
+    val nodes: RDD[(VertexId, String)] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, e1) })
+    val graph: Graph[String, Double] = Graph(nodes, edges)
+
+
     println("num edges = " + graph.numEdges);
     println("num vertices = " + graph.numVertices);
 
