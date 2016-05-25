@@ -34,14 +34,31 @@ object Main {
       .setJars(SparkContext.jarOfClass(this.getClass).toList)
 
     val sc = new SparkContext(conf)
+    
+    var videoMap:Map[String, Long] = Map()
+    var index:Long = 0
 
-    val edges: RDD[Edge[String]] =
-      sc.textFile(args(0)).map { line =>
+    val edges: RDD[Edge[Double]] =
+      sc.textFile("../data/input.txt").flatMap { line =>
         val fields = line.split(" ")
-        Edge(fields(0).toLong, fields(1).toLong, fields(2))
+        
+        if(videoMap.contains(fields(0)) == false) {
+          videoMap += (fields(0) -> index)
+          index += 1
+        }
+        
+        if(videoMap.contains(fields(1)) == false) {
+          videoMap += (fields(1) -> index)
+          index += 1
+        }
+        
+        List(
+            Edge(videoMap.apply(fields(0)), videoMap.apply(fields(1)), 1/(fields(2).toDouble)),
+            Edge(videoMap.apply(fields(0)), videoMap.apply(fields(1)), 1/(fields(2).toDouble))
+            )
       }
 
-    val graph: Graph[Any, String] = Graph.fromEdges(edges, "defaultProperty")
+    val graph: Graph[Any, Double] = Graph.fromEdges(edges, 0.0)
 
     println("num edges = " + graph.numEdges);
     println("num vertices = " + graph.numVertices);
