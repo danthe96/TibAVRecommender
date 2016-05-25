@@ -4,9 +4,8 @@ import org.apache.spark.graphx.Graph
 
 object BFSRecommender {
   
-  def buildRecommenderGraph(graph:Graph[[Long,String], String]):Graph = {
-    
-    
+  def buildRecommenderGraph(graph:Graph[String, Long]):Graph[String, Long] = {
+      graph
   }
   
 }

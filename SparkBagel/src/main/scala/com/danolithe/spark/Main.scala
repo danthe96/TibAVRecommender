@@ -1,20 +1,18 @@
 package com.danolithe.spark
 
+import java.util.Properties
+
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+
+import org.apache.log4j.Logger
+import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkConf
-import org.apache.log4j.Logger
-import java.util.Properties
 import org.apache.spark.storage.StorageLevel
-import java.util.ArrayList
-import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
-import java.util.TreeSet
-import java.util.concurrent.ConcurrentSkipListSet
-import java.util.HashMap
-
+import scala.collection.mutable.HashMap
 
 object Main {
 
@@ -36,39 +34,35 @@ object Main {
     val conf = new SparkConf()
       .setAppName("KnowMin-TIBAV")
       .setSparkHome(System.getenv("SPARK_HOME"))
-      .setJars(SparkContext.jarOfClass(this.getClass).toList)            
+      .setJars(SparkContext.jarOfClass(this.getClass).toList)
     val sc = new SparkContext(conf)
-    
-    var logger = Logger.getLogger(this.getClass())
-    
+
+    val logger = Logger.getLogger(this.getClass())
+
     var id = 0
-    var nodeNames = new HashMap[String, Long]()
+    var nodeNames = HashMap[String, Long]()
     val edges: RDD[Edge[Long]] =
       sc.textFile(args(0)).map { line =>
-        val fields:Array[String] = line.split(" ")
-        
-        val vertexId1 = nodeNames.get(fields[0])
-        if(vertexId1 == null){
-          nodeNames.put(fields[0], id)
-          vertexId1 = id
-          id = id+1
-        }
-         val vertexId2 = nodeNames.get(fields[0])
-         if(vertexId2 == null){
-          nodeNames.put(fields[1], id)
-          vertexId2 = id
-          id = id+1
-        }
-         
+        val fields: Array[String] = line.split(" ")
+
+        val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+          id += 1
+          id - 1
+        })
+        val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+          id += 1
+          id - 1
+        })
+
         Edge(vertexId1, vertexId2, fields(2).toLong)
-    }
-    var nodes: RDD[(VertexId, String)] = nodeNames.entrySet().map({})
-    println(edges.count()) 
-    
-    val graph: Graph[(VertexId, String), Long] = Graph(edges, nodes)
+      }
+    val nodes: RDD[(VertexId, String)] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, e1) })
+    println(edges.count())
+
+    val graph: Graph[String, Long] = Graph(nodes, edges)
     println("num edges = " + graph.numEdges);
-    println("num vertices = " + graph.numVertices);   
-    
+    println("num vertices = " + graph.numVertices);
+
     graph.vertices.saveAsTextFile(OUTPUT_PATH + "vertices")
     graph.edges.saveAsTextFile(OUTPUT_PATH + "edges")
 
