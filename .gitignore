@@ -1,2 +1,5 @@
 yovisto-parser/tests/
 /bin/
+*.classpath
+*.prefs
+*.project
