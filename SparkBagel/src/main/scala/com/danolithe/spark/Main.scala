@@ -102,8 +102,8 @@ object Main {
     var edges: RDD[Edge[Double]] = typeEdges
     edges = edges ++ dbpediaEdges
     edges = edges ++ videoEdges
-    val nodes: RDD[(VertexId, String)] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, e1) })
-    val graph: Graph[String, Double] = Graph(nodes, edges)
+    val nodes: RDD[(VertexId, (String, Double, Int, Int))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, 0.0, -1, Int.MaxValue)) })
+    val graph: Graph[(String, Double, Int, Int), Double] = Graph(nodes, edges)
 
 
     println("num edges = " + graph.numEdges);
