@@ -1,7 +1,7 @@
 from pymantic import sparql
 from tabulate import tabulate
 
-server = sparql.SPARQLServer('http://de.dbpedia.org/sparql')
+server = sparql.SPARQLServer('http://dbpedia.org/sparql')
 
 def printResult(data):
 	results = list()
@@ -12,7 +12,7 @@ def printResult(data):
 		results += [line]
 
 	string = tabulate(results, headers=data['head']['vars'])
-	print str(len(results)) + ' result(s)'
+	#print str(len(results)) + ' result(s)'
 	return string
 
 def processResult(data):
@@ -24,3 +24,10 @@ def processResult(data):
 		results += [line]
 
 	return results
+	
+def countLines(data):
+	count =0;
+	for res in data['results']['bindings']:
+		line = list()
+		count = count +1
+	return count
