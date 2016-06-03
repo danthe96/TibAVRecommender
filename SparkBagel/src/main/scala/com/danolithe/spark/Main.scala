@@ -37,16 +37,15 @@ object Main {
       .setJars(SparkContext.jarOfClass(this.getClass).toList)
     val sc = new SparkContext(conf)
 
-
     val logger = Logger.getLogger(this.getClass())
 
     var id = 0
     var nodeNames = HashMap[String, Long]()
-
+    var videoIds = Set[Long]()
     val typeEdges: RDD[Edge[Double]] =
       sc.textFile("../data/DBPedia_types_filtered_count.txt").flatMap { line =>
         val fields = line.split(" ")
-        
+
         val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
           id += 1
           id - 1
@@ -57,14 +56,13 @@ object Main {
         })
         List(
           Edge(vertexId1, vertexId2, fields(2).toDouble),
-          Edge(vertexId2, vertexId1, fields(2).toDouble)
-          )
+          Edge(vertexId2, vertexId1, fields(2).toDouble))
       }
-    
-      val dbpediaEdges: RDD[Edge[Double]] =
+
+    val dbpediaEdges: RDD[Edge[Double]] =
       sc.textFile("../data/gnd_DBpedia_filtered.txt").flatMap { line =>
         val fields = line.split(" ")
-        
+
         val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
           id += 1
           id - 1
@@ -75,14 +73,13 @@ object Main {
         })
         List(
           Edge(vertexId1, vertexId2, 1),
-          Edge(vertexId2, vertexId1, 1)
-          )
+          Edge(vertexId2, vertexId1, 1))
       }
-      
-      val videoEdges: RDD[Edge[Double]] =
+
+    val videoEdges: RDD[Edge[Double]] =
       sc.textFile("../data/tib_gnd_sorted_count.txt").flatMap { line =>
         val fields = line.split(" ")
-        
+
         val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
           id += 1
           id - 1
@@ -91,26 +88,31 @@ object Main {
           id += 1
           id - 1
         })
+
+        videoIds = videoIds + (vertexId1)
+
         List(
-          Edge(vertexId1, vertexId2, fields(2).toDouble/fields(3).toDouble),
-          Edge(vertexId2, vertexId1, fields(2).toDouble/fields(3).toDouble)
-          )
-      }        
+          Edge(vertexId1, vertexId2, fields(2).toDouble / fields(3).toDouble),
+          Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
+      }
 
-
-    
     var edges: RDD[Edge[Double]] = typeEdges
     edges = edges ++ dbpediaEdges
     edges = edges ++ videoEdges
-    val nodes: RDD[(VertexId, (String, Double, Int, Int))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, 0.0, -1, Int.MaxValue)) })
-    val graph: Graph[(String, Double, Int, Int), Double] = Graph(nodes, edges)
+    val nodes: RDD[(VertexId, (String, List[(Double, Int)], List[Int]))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, List((0.0, -1)), List())) })
+    val graph: Graph[(String, List[(Double, Int)], List[Int]), Double] = Graph(nodes, edges)
 
+    val resultGraph = BFSRecommender.buildRecommenderGraph(graph)
 
-    println("num edges = " + graph.numEdges);
-    println("num vertices = " + graph.numVertices);
+    println("num edges = " + resultGraph.numEdges);
+    println("num vertices = " + resultGraph.numVertices);
 
-    graph.vertices.saveAsTextFile(OUTPUT_PATH + "vertices")
-    graph.edges.saveAsTextFile(OUTPUT_PATH + "edges")
+    resultGraph.vertices.saveAsTextFile(OUTPUT_PATH + "vertices")
+    resultGraph.edges.saveAsTextFile(OUTPUT_PATH + "edges")
+
+    //    val result = graph.pregel(BFSRecommender.initialMsg, 10, EdgeDirection.Out)(BFSRecommender.vprog, BFSRecommender.sendMsg, BFSRecommender.mergeMsg)
+    //    result.vertices.saveAsTextFile(OUTPUT_PATH + "vertices")
+    //    result.edges.saveAsTextFile(OUTPUT_PATH + "edges")
 
   }
 }
