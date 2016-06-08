@@ -66,28 +66,43 @@ object Main {
       typeEdges :+(Edge(vertexId1, vertexId2, fields(2).toDouble))
       typeEdges :+(Edge(vertexId2, vertexId1, fields(2).toDouble))
     }
+    
+    for (line <- Source.fromFile("../data/gnd_DBpedia_filtered.txt").getLines()) {
+      val fields = line.split(" ")
 
-    //    val videoEdges: RDD[Edge[Double]] =
-    //      sc.textFile("../data/tib_gnd_sorted_count.txt").flatMap { line =>
-    //        val fields = line.split(" ")
-    //
-    //        val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
-    //          id += 1
-    //          id - 1
-    //        })
-    //        val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
-    //          id += 1
-    //          id - 1
-    //        })
-    //
-    //        videoIds = videoIds + (vertexId1)
-    //
-    //        List(
-    //          Edge(vertexId1, vertexId2, fields(2).toDouble / fields(3).toDouble),
-    //          Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
-    //      }
+      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+      println(nodeNames.size)
+      typeEdges :+(Edge(vertexId1, vertexId2, 1))
+      typeEdges :+(Edge(vertexId2, vertexId1, 1))
+    }
+    
+    for (line <- Source.fromFile("../data/tib_gnd_sorted_count.txt").getLines()) {
+      val fields = line.split(" ")
 
-    var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges, 1)
+      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+      
+      videoIds = videoIds + (vertexId1)
+      
+      println(nodeNames.size)
+      typeEdges :+(Edge(vertexId1, vertexId2, fields(2).toDouble / fields(3).toDouble))
+      typeEdges :+(Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
+    }
+
+    var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
 
     println("final nodes size" + nodeNames.size)
 
