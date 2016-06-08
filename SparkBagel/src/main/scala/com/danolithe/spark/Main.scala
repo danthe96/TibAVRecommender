@@ -63,8 +63,8 @@ object Main {
         id - 1
       })
       println(nodeNames.size)
-      typeEdges.add(Edge(vertexId1, vertexId2, fields(2).toDouble))
-      typeEdges.add(Edge(vertexId2, vertexId1, fields(2).toDouble))
+      typeEdges :+(Edge(vertexId1, vertexId2, fields(2).toDouble))
+      typeEdges :+(Edge(vertexId2, vertexId1, fields(2).toDouble))
     }
 
     //    val videoEdges: RDD[Edge[Double]] =
