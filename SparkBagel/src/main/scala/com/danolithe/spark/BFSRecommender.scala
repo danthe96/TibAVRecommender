@@ -8,18 +8,18 @@ object BFSRecommender {
 
   val initialMsg = List((0.0, 0))
 
-  def buildRecommenderGraph(graph: Graph[(String, List[(Double, Int)], List[Int]), Double]) = {
+  def buildRecommenderGraph(graph: Graph[(String, List[(Double, Int)], List[Int], Boolean), Double]) = {
     graph.pregel(initialMsg, 1000, EdgeDirection.Out)(this.vprog, this.sendMsg, this.mergeMsg)
   }
 
-  def vprog(vertexId: VertexId, value: (String, List[(Double, Int)], List[Int]), message: List[(Double, Int)]): (String, List[(Double, Int)], List[Int]) = {
+  def vprog(vertexId: VertexId, value: (String, List[(Double, Int)], List[Int], Boolean), message: List[(Double, Int)]): (String, List[(Double, Int)], List[Int], Boolean) = {
     if (message == initialMsg)
       value
     else
-      (value._1, value._2 ++ message, value._3 :+ vertexId.intValue())
+      (value._1, value._2 ++ message, value._3 :+ vertexId.intValue(), value._4)
   }
 
-  def sendMsg(triplet: EdgeTriplet[(String, List[(Double, Int)], List[Int]), Double]): Iterator[(VertexId, List[(Double, Int)])] = {
+  def sendMsg(triplet: EdgeTriplet[(String, List[(Double, Int)], List[Int], Boolean), Double]): Iterator[(VertexId, List[(Double, Int)])] = {
     val sourceVertex = triplet.srcAttr
 
     if (sourceVertex._3.contains(triplet.dstId))
