@@ -45,7 +45,6 @@ object Main {
 
     val sc = new SparkContext(conf)
 
-    val logger = Logger.getLogger(this.getClass())
 
     var id: Int = 0
     var nodeNames = HashMap[String, Long]()
