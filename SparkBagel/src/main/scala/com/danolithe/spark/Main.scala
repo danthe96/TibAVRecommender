@@ -62,10 +62,9 @@ object Main {
         id += 1
         id - 1
       })
-      println(nodeNames.size)
-      typeEdges :+(Edge(vertexId1, vertexId2, fields(2).toDouble))
-      typeEdges :+(Edge(vertexId2, vertexId1, fields(2).toDouble))
-    }
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble))
+     }
     
     for (line <- Source.fromFile("../data/gnd_DBpedia_filtered.txt").getLines()) {
       val fields = line.split(" ")
@@ -78,9 +77,9 @@ object Main {
         id += 1
         id - 1
       })
-      println(nodeNames.size)
-      typeEdges :+(Edge(vertexId1, vertexId2, 1))
-      typeEdges :+(Edge(vertexId2, vertexId1, 1))
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1.0))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0))
+      //typeEdges :+
     }
     
     for (line <- Source.fromFile("../data/tib_gnd_sorted_count.txt").getLines()) {
@@ -97,15 +96,14 @@ object Main {
       
       videoIds = videoIds + (vertexId1)
       
-      println(nodeNames.size)
-      typeEdges :+(Edge(vertexId1, vertexId2, fields(2).toDouble / fields(3).toDouble))
-      typeEdges :+(Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble/ fields(3).toDouble)) 
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble/ fields(3).toDouble))
+      
     }
 
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
 
     println("final nodes size" + nodeNames.size)
-
     val nodes: RDD[(VertexId, (String, List[(Double, Int)], List[Int]))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, List((0.0, -1)), List())) })
     val graph: Graph[(String, List[(Double, Int)], List[Int]), Double] = Graph(nodes, edges)
 
@@ -113,11 +111,13 @@ object Main {
 
     println("num edges = " + resultGraph.numEdges);
     println("num vertices = " + resultGraph.numVertices);
-
-    resultGraph.vertices.saveAsTextFile(OUTPUT_PATH + "vertices")
-    resultGraph.edges.saveAsTextFile(OUTPUT_PATH + "edges")
     
-    //    val result = graph.pregel(BFSRecommender.initialMsg, 10, EdgeDirection.Out)(BFSRecommender.vprog, BFSRecommender.sendMsg, BFSRecommender.mergeMsg)
+    resultGraph.vertices.saveAsTextFile(OUTPUT_PATH + "vertices.txt")
+    resultGraph.edges.saveAsTextFile(OUTPUT_PATH + "edges.txt")
+    
+    val result = graph.pregel(BFSRecommender.initialMsg, 10, EdgeDirection.Out)(BFSRecommender.vprog, BFSRecommender.sendMsg, BFSRecommender.mergeMsg)
+    result.vertices.foreach(println)
+    //result.vertices.foreach(println)
     //    result.vertices.saveAsTextFile(OUTPUT_PATH + "vertices")
     //    result.edges.saveAsTextFile(OUTPUT_PATH + "edges")
 
