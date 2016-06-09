@@ -105,8 +105,8 @@ object Main {
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
 
     println("final nodes size" + nodeNames.size)
-    val nodes: RDD[(VertexId, (String, List[(Double, Int)], List[Int], Boolean))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, List((0.0, -1)), List(), e1 == video_id)) })
-    val graph: Graph[(String, List[(Double, Int)], List[Int], Boolean), Double] = Graph(nodes, edges)
+    val nodes: RDD[(VertexId, (String, List[(Double, Int)], List[Int], Boolean, Boolean))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, List((0.0, -1)), List(), e1 == video_id, videoIds.contains(e1))) })
+    val graph: Graph[(String, List[(Double, Int)], List[Int], Boolean, Boolean), Double] = Graph(nodes, edges)
 
     val resultGraph = BFSRecommender.buildRecommenderGraph(graph)
 
