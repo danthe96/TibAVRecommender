@@ -112,13 +112,28 @@ object Main {
     
     resultGraph.vertices.filter(node => (videoIds.contains(node._1) && node._1 != video_id)).foreach(println)
 
-    
-    var recommendScores: Array[(Long, String, Double)] = resultGraph.vertices.map[(Long, String, Double)](node => {
+    /*var recommendScores: Array[(Long, String, Double)] = resultGraph.vertices.toArray().foldLeft((0: Int, 0: Double, 0: Int)){
+        case ((a, b, c), m) => (
+          a + m.get("a").collect{case i: Int => i}.getOrElse(0),
+          b + m.get("b").collect{case i: Double => i}.getOrElse(0),
+          c + m.get("c").collect{case i: Int => i}.getOrElse(0)
+          )
+        }
+    */
+    /*var recommendScores: Array[(Long, String, Double)] = resultGraph.vertices.map[(Long, String, Double)](node => {
       val aggr = node._2._2.aggregate((0.0, 0))((acc, value) => (acc._1 + value._1, acc._2 + value._2), (acc1, acc2) => (acc1._1 + acc2._1, acc1._2 + acc2._2))
       if (aggr._2 == 0) {
         (node._1, node._2._1, -0.0)
       } else {
         (node._1, node._2._1, aggr._1 / aggr._2)
+      }
+    }).collect()*/
+    var recommendScores: Array[(Long, String, Double)] = resultGraph.vertices.map[(Long, String, Double)](node => {
+      val aggr:Double = node._2._2.foldLeft(0.0){(value:Double,el) => value+ (el._1 /el._2)}
+      if (aggr == 0) {
+        (node._1, node._2._1, -0.0)
+      } else {
+        (node._1, node._2._1, aggr)
       }
     }).collect()
     recommendScores = recommendScores.filter(score => (videoIds.contains(score._1) && score._2 != video_id)).sortBy(-_._3)
