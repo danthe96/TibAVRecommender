@@ -45,7 +45,6 @@ object Main {
 
     val sc = new SparkContext(conf)
 
-
     var id: Int = 0
     var nodeNames = HashMap[String, Long]()
     var videoIds = Set[Long]()
@@ -67,7 +66,7 @@ object Main {
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble))
     }
 
-//    for (line <- Source.fromFile("../data/gnd_DBpedia_filtered.txt").getLines()) {
+    //    for (line <- Source.fromFile("../data/gnd_DBpedia_filtered.txt").getLines()) {
     for (line <- Source.fromFile("../data/test1/t1_gnd_dbp_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
 
@@ -84,7 +83,7 @@ object Main {
       //typeEdges :+
     }
 
-//    for (line <- Source.fromFile("../data/tib_gnd_sorted_count.txt").getLines()) {
+    //    for (line <- Source.fromFile("../data/tib_gnd_sorted_count.txt").getLines()) {
     for (line <- Source.fromFile("../data/test1/t1_tib_gnd_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
 
@@ -112,9 +111,13 @@ object Main {
 
     val resultGraph = BFSRecommender.buildRecommenderGraph(graph)
 
-    var recommendScores: Array[(String, Double)] = resultGraph.vertices.map(node => {
-      val aggr = (node._2._2.map(score => (score._1 / score._2)).sum) / node._2._2.length
-      (node._2._1, aggr)
+    var recommendScores: Array[(String, Double)] = resultGraph.vertices.map[(String, Double)](node => {
+      val aggr = node._2._2.aggregate((0.0, 0))((acc, value) => (acc._1 + value._1, acc._2 + value._2), (acc1, acc2) => (acc1._1 + acc2._1, acc1._2 + acc2._2))
+      if (aggr._2 == 0) {
+        (node._2._1, -1.0)
+      } else {
+        (node._2._1, aggr._1 / aggr._2)
+      }
     }).collect()
     recommendScores.sortBy(-_._2)
     recommendScores.indices.foreach(i => { println((i + 1) + ". " + recommendScores(i)._1 + ", Score: " + recommendScores(i)._2) })
