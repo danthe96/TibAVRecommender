@@ -52,7 +52,8 @@ object Main {
     var videoIds = Set[Long]()
 
     var typeEdges = List[Edge[Double]]()
-    for (line <- Source.fromFile("../data/DBPedia_types_filtered_count.txt").getLines()) {
+    //for (line <- Source.fromFile("../data/DBPedia_types_filtered_count.txt").getLines()) {
+    for (line <- Source.fromFile("../data/test1/t1_types_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
 
       val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
@@ -67,7 +68,8 @@ object Main {
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble))
     }
 
-    for (line <- Source.fromFile("../data/gnd_DBpedia_filtered.txt").getLines()) {
+//    for (line <- Source.fromFile("../data/gnd_DBpedia_filtered.txt").getLines()) {
+    for (line <- Source.fromFile("../data/test1/t1_gnd_dbp_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
 
       val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
@@ -83,7 +85,8 @@ object Main {
       //typeEdges :+
     }
 
-    for (line <- Source.fromFile("../data/tib_gnd_sorted_count.txt").getLines()) {
+//    for (line <- Source.fromFile("../data/tib_gnd_sorted_count.txt").getLines()) {
+    for (line <- Source.fromFile("../data/test1/t1_tib_gnd_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
 
       val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
