@@ -105,23 +105,26 @@ object Main {
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
 
     println("final nodes size" + nodeNames.size)
-    val nodes: RDD[(VertexId, (String, List[(Double, Int)], List[Int], Boolean, Boolean))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, List((0.0, -1)), List(), e1 == video_id, videoIds.contains(e1))) })
-    val graph: Graph[(String, List[(Double, Int)], List[Int], Boolean, Boolean), Double] = Graph(nodes, edges)
+    val nodes: RDD[(VertexId, (String, List[(Double, Int)], Set[Long], Boolean, Boolean))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, List((0.0, -1)), Set[Long](), e1 == video_id, videoIds.contains(e1))) })
+    val graph: Graph[(String, List[(Double, Int)], Set[Long], Boolean, Boolean), Double] = Graph(nodes, edges)
 
     val resultGraph = BFSRecommender.buildRecommenderGraph(graph)
 
-    var recommendScores:Array[(String, Double)] = resultGraph.vertices.map(node => {(node._2._1, 0.0)}).collect()
+    var recommendScores: Array[(String, Double)] = resultGraph.vertices.map(node => {
+      val aggr = (node._2._2.map(score => (score._1 / score._2)).sum) / node._2._2.length
+      (node._2._1, aggr)
+    }).collect()
     recommendScores.sortBy(-_._2)
-    recommendScores.indices.foreach( i => {println((i+1)+". " + recommendScores(i)._1 + ", Score: " + recommendScores(i)._2)})
-    
+    recommendScores.indices.foreach(i => { println((i + 1) + ". " + recommendScores(i)._1 + ", Score: " + recommendScores(i)._2) })
+
     println("num edges = " + resultGraph.numEdges);
     println("num vertices = " + resultGraph.numVertices);
 
     resultGraph.vertices.saveAsTextFile(OUTPUT_PATH + "vertices.txt")
     resultGraph.edges.saveAsTextFile(OUTPUT_PATH + "edges.txt")
 
-//    val result = graph.pregel(BFSRecommender.initialMsg, 10, EdgeDirection.Out)(BFSRecommender.vprog, BFSRecommender.sendMsg, BFSRecommender.mergeMsg)
-//    result.vertices.foreach(println)
+    //    val result = graph.pregel(BFSRecommender.initialMsg, 10, EdgeDirection.Out)(BFSRecommender.vprog, BFSRecommender.sendMsg, BFSRecommender.mergeMsg)
+    //    result.vertices.foreach(println)
     //result.vertices.foreach(println)
     //    result.vertices.saveAsTextFile(OUTPUT_PATH + "vertices")
     //    result.edges.saveAsTextFile(OUTPUT_PATH + "edges")
