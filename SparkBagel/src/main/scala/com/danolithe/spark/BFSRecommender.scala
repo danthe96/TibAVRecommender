@@ -22,7 +22,7 @@ object BFSRecommender {
   def sendMsg(triplet: EdgeTriplet[(String, List[(Double, Int)], Set[Long], Boolean, Boolean), Double]): Iterator[(VertexId, (List[(Double, Int)], Set[Long]))] = {
     val sourceVertex = triplet.srcAttr
 
-    if (sourceVertex._3.contains(triplet.dstId))
+    if (sourceVertex._3.contains(triplet.dstId) || (sourceVertex._4 && !sourceVertex._5))
       Iterator.empty
     else
       Iterator((triplet.dstId.longValue(), (sourceVertex._2.map(tuple => (tuple._1 + triplet.attr.doubleValue(), tuple._2 + 1)), sourceVertex._3 + triplet.srcId.longValue())))
