@@ -115,13 +115,12 @@ object Main {
         id - 1
       })
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 0.1 * (fields(2).toDouble/fields(3).toDouble)))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 0.1 * (fields(2).toDouble/fields(3).toDouble)))
     }
     
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
 
-    val nodes: RDD[(VertexId, (String, List[(Double, Int)], Set[Long], Boolean, Boolean))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, List[(Double, Int)](), Set[Long](), e1 == video_id, videoIds.contains(e2))) })
-    val graph: Graph[(String, List[(Double, Int)], Set[Long], Boolean, Boolean), Double] = Graph(nodes, edges)
+    val nodes: RDD[(VertexId, (String, Set[(Double, Int, List[String])], Set[Long], Boolean, Boolean))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, Set[(Double, Int, List[String])](), Set[Long](), e1 == video_id, videoIds.contains(e2))) })
+    val graph: Graph[(String, Set[(Double, Int, List[String])], Set[Long], Boolean, Boolean), Double] = Graph(nodes, edges)
 
     val resultGraph = BFSRecommender.buildRecommenderGraph(graph)
     

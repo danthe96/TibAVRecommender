@@ -6,17 +6,17 @@ import org.apache.spark.rdd.RDD
 
 object BFSRecommender {
 
-  val initialMsg = (List((0.0, 0)), Set[Long]())
+  val initialMsg = (Set((0.0, 0, List[String]())), Set[Long]())
 
-  def buildRecommenderGraph(graph: Graph[(String, List[(Double, Int)], Set[Long], Boolean, Boolean), Double]) = {
+  def buildRecommenderGraph(graph: Graph[(String, Set[(Double, Int, List[String])], Set[Long], Boolean, Boolean), Double]) = {
     println("build pregel...")
     graph.pregel(initialMsg, 1000, EdgeDirection.Out)(this.vprog, this.sendMsg, this.mergeMsg)
   }
 
-  def vprog(vertexId: VertexId, value: (String, List[(Double, Int)], Set[Long], Boolean, Boolean), message: (List[(Double, Int)], Set[Long])): (String, List[(Double, Int)], Set[Long], Boolean, Boolean) = {
+  def vprog(vertexId: VertexId, value: (String, Set[(Double, Int, List[String])], Set[Long], Boolean, Boolean), message: (Set[(Double, Int, List[String])], Set[Long])): (String, Set[(Double, Int, List[String])], Set[Long], Boolean, Boolean) = {
     
     if(message == initialMsg && value._4)
-      (value._1, List((0.0,0)), value._3, true, value._5)
+      (value._1, Set((0.0,0,List[String]())), value._3, true, value._5)
     else if (message == initialMsg) {
       println("initial message " + vertexId + ": " + value._1 + "			value: " + value)
       value
@@ -25,16 +25,16 @@ object BFSRecommender {
       (value._1, value._2 ++ message._1, value._3 ++ message._2, false, value._5)
   }
 
-  def sendMsg(triplet: EdgeTriplet[(String, List[(Double, Int)], Set[Long], Boolean, Boolean), Double]): Iterator[(VertexId, (List[(Double, Int)], Set[Long]))] = {
+  def sendMsg(triplet: EdgeTriplet[(String, Set[(Double, Int, List[String])], Set[Long], Boolean, Boolean), Double]): Iterator[(VertexId, (Set[(Double, Int, List[String])], Set[Long]))] = {
     val sourceVertex = triplet.srcAttr
 
     if(sourceVertex._4 || !(sourceVertex._3.isEmpty || sourceVertex._3.contains(triplet.dstId) || sourceVertex._5)) {
       println(sourceVertex._1, (triplet.dstAttr._1, (sourceVertex._2.map(tuple => (tuple._1 + triplet.attr.doubleValue(), tuple._2)), sourceVertex._3 + triplet.srcId.longValue())))
-      Iterator((triplet.dstId.longValue(), (sourceVertex._2.map(tuple => (tuple._1 + triplet.attr.doubleValue(), (tuple._2 + 1))), sourceVertex._3 + triplet.srcId.longValue())))
+      Iterator((triplet.dstId.longValue(), (sourceVertex._2.map(triple => (triple._1 + triplet.attr.doubleValue(), (triple._2 + 1), triple._3 :+ sourceVertex._1)), sourceVertex._3 + triplet.srcId.longValue())))
     } else 
       Iterator.empty
   }
 
-  def mergeMsg(msg1: (List[(Double, Int)], Set[Long]), msg2: (List[(Double, Int)], Set[Long])): (List[(Double, Int)], Set[Long]) = (msg1._1 ++ msg2._1, msg1._2 ++ msg2._2)
+  def mergeMsg(msg1: (Set[(Double, Int, List[String])], Set[Long]), msg2: (Set[(Double, Int, List[String])], Set[Long])): (Set[(Double, Int, List[String])], Set[Long]) = (msg1._1 ++ msg2._1, msg1._2 ++ msg2._2)
 
 }
