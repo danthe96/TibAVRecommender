@@ -62,8 +62,8 @@ object Main {
         id += 1
         id - 1
       })
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble/fields(3).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble/fields(3).toDouble))
     }
 
     //    for (line <- Source.fromFile("../data/gnd_DBpedia_filtered.txt").getLines()) {
@@ -84,7 +84,7 @@ object Main {
     }
 
     //    for (line <- Source.fromFile("../data/tib_gnd_sorted_count.txt").getLines()) {
-    for (line <- Source.fromFile("../data/test1/t1_tib_gnd_filtered_sorted_count.txt").getLines()) {
+    for (line <- Source.fromFile("../data/test1/t1_tib_gnd_filtered_sorted_count_1.txt").getLines()) {
       val fields = line.split(" ")
 
       val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
@@ -103,6 +103,21 @@ object Main {
 
     }
 
+    for (line <- Source.fromFile("../data/test1/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
+    val fields = line.split(" ")
+
+    val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 0.1 * (fields(2).toDouble/fields(3).toDouble)))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 0.1 * (fields(2).toDouble/fields(3).toDouble)))
+    }
+    
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
 
     val nodes: RDD[(VertexId, (String, List[(Double, Int)], Set[Long], Boolean, Boolean))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, List[(Double, Int)](), Set[Long](), e1 == video_id, videoIds.contains(e2))) })
