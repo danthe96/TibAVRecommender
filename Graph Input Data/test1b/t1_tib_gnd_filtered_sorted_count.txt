@@ -1,0 +1,7 @@
+vid1 gnd1 2 6
+vid1 gnd2 1 6
+vid1 gnd3 1 6
+vid1 gnd4 2 6
+vid2 gnd5 3 4
+vid2 gnd6 1 4
+vid3 gnd7 1 1

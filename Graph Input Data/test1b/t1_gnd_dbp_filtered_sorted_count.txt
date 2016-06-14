@@ -1,0 +1,7 @@
+gnd1 dbp1 1 1
+gnd2 dbp2 1 1
+gnd3 dbp3 1 1
+gnd4 dbp7 1 1
+gnd5 dbp5 1 1
+gnd6 dbp6 1 1
+gnd7 dbp8 1 1
