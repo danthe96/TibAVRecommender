@@ -1,0 +1,2 @@
+vid1 gnd1
+vid2 gnd2

@@ -1,0 +1,8 @@
+dbp1 dbp2
+dbp1 dbp4
+dbp1 dbp5
+dbp3 dbp1
+dbp3 dbp6
+dbp4 dbp6
+dbp6 dbp2
+dbp6 dbp5
