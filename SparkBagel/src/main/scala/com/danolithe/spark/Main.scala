@@ -124,8 +124,13 @@ object Main {
 
     val resultGraph = BFSRecommender.buildRecommenderGraph(graph)
     
-    resultGraph.vertices.filter(node => (videoIds.contains(node._1) && node._1 != video_id)).foreach(println)
-
+    resultGraph.vertices.filter(node => (videoIds.contains(node._1) && node._2._1 != video_id)).foreach(node => {
+      println("paths found from " + video_id + " to " + node._2._1 + ": ")
+      node._2._2.foreach(println)
+    })
+    println()
+    println()
+    println("Scores:")
     /*var recommendScores: Array[(Long, String, Double)] = resultGraph.vertices.toArray().foldLeft((0: Int, 0: Double, 0: Int)){
         case ((a, b, c), m) => (
           a + m.get("a").collect{case i: Int => i}.getOrElse(0),
