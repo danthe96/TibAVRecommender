@@ -1,7 +1,7 @@
 from pymantic import sparql
 from tabulate import tabulate
 
-server = sparql.SPARQLServer('http://de.dbpedia.org/sparql')
+server = sparql.SPARQLServer('http://172.16.17.215:9999/bigdata/sparql')
 
 def printResult(data):
 	results = list()

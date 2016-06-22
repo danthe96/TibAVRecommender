@@ -119,12 +119,12 @@ object Main {
     
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
 
-    val nodes: RDD[(VertexId, (String, Set[(Double, Int, List[String])], Set[Long], Boolean, Boolean))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, Set[(Double, Int, List[String])](), Set[Long](), e1 == video_id, videoIds.contains(e2))) })
-    val graph: Graph[(String, Set[(Double, Int, List[String])], Set[Long], Boolean, Boolean), Double] = Graph(nodes, edges)
+    val nodes: RDD[(VertexId, (String, Set[(Double, Int, List[String], Set[Long])], Boolean, Boolean))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, Set[(Double, Int, List[String], Set[Long])](), e1 == video_id, videoIds.contains(e2))) })
+    val graph: Graph[(String, Set[(Double, Int, List[String], Set[Long])], Boolean, Boolean), Double] = Graph(nodes, edges)
 
     val resultGraph = BFSRecommender.buildRecommenderGraph(graph)
     
-    resultGraph.vertices.filter(node => (videoIds.contains(node._1) && node._1 != video_id)).foreach(println)
+    resultGraph.vertices.filter(node => (videoIds.contains(node._1) && node._2._1 != video_id)).foreach(println)
 
     /*var recommendScores: Array[(Long, String, Double)] = resultGraph.vertices.toArray().foldLeft((0: Int, 0: Double, 0: Int)){
         case ((a, b, c), m) => (
