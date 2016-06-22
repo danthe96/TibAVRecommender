@@ -62,8 +62,8 @@ object Main {
         id += 1
         id - 1
       })
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble/fields(3).toDouble))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble/fields(3).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1.0/2.0)))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0/fields(2).toDouble))
     }
 
     //    for (line <- Source.fromFile("../data/gnd_DBpedia_filtered.txt").getLines()) {
@@ -114,7 +114,7 @@ object Main {
         id += 1
         id - 1
       })
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 0.1 * (fields(2).toDouble/fields(3).toDouble)))
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 0.5 * (1.0/fields(2).toDouble)))
     }
     
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
