@@ -1,5 +1,0 @@
-dbp1 dbp4 1 2
-dbp5 dbp4 1 2
-dbp6 dbp4 1 2
-dbp7 dbp9 1 2
-dbp8 dbp9 1 2
