@@ -102,6 +102,28 @@ object Main {
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
 
     }
+    
+    
+    for (line <- Source.fromFile("../data/Filtered/tib_gnd_sorted_filtered_sorted_count.txt").getLines()) {
+    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt").getLines()) {
+      val fields = line.split(" ")
+
+      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+
+      videoIds = videoIds + (vertexId1)
+
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble / fields(3).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
+
+    }
+
 
    /* for (line <- Source.fromFile("../data/test1b/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
     val fields = line.split(" ")
@@ -116,6 +138,8 @@ object Main {
       })
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 0.5 * (1.0/fields(2).toDouble)))
     }*/
+    
+    
     
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
 
