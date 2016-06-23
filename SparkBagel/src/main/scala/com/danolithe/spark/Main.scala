@@ -50,8 +50,8 @@ object Main {
     var videoIds = Set[Long]()
 
     var typeEdges = List[Edge[Double]]()
-    //for (line <- Source.fromFile("../data/DBPedia_types_filtered_count.txt").getLines()) {
-    for (line <- Source.fromFile("../data/test1/t1_types_filtered_sorted_count.txt").getLines()) {
+    for (line <- Source.fromFile("../data/Filtered/DBPedia_types_filtered_filtered_sorted_count.txt").getLines()) {
+    //for (line <- Source.fromFile("../data/test1b/t1_types_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
 
       val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
@@ -62,12 +62,12 @@ object Main {
         id += 1
         id - 1
       })
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble/fields(3).toDouble))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble/fields(3).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1.0/2.0)))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0/fields(2).toDouble))
     }
 
-    //    for (line <- Source.fromFile("../data/gnd_DBpedia_filtered.txt").getLines()) {
-    for (line <- Source.fromFile("../data/test1/t1_gnd_dbp_filtered_sorted_count.txt").getLines()) {
+    for (line <- Source.fromFile("../data/Filtered/GND_DBPEDIA_filtered_sorted_count.txt").getLines()) {
+    //for (line <- Source.fromFile("../data/test1b/t1_gnd_dbp_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
 
       val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
@@ -83,8 +83,8 @@ object Main {
       //typeEdges :+
     }
 
-    //    for (line <- Source.fromFile("../data/tib_gnd_sorted_count.txt").getLines()) {
-    for (line <- Source.fromFile("../data/test1/t1_tib_gnd_filtered_sorted_count_1.txt").getLines()) {
+    for (line <- Source.fromFile("../data/Filtered/tib_gnd_sorted_filtered_sorted_count.txt").getLines()) {
+    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt").getLines()) {
       val fields = line.split(" ")
 
       val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
@@ -103,7 +103,7 @@ object Main {
 
     }
 
-    for (line <- Source.fromFile("../data/test1/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
+   /* for (line <- Source.fromFile("../data/test1b/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
     val fields = line.split(" ")
 
     val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
@@ -114,8 +114,8 @@ object Main {
         id += 1
         id - 1
       })
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 0.1 * (fields(2).toDouble/fields(3).toDouble)))
-    }
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 0.5 * (1.0/fields(2).toDouble)))
+    }*/
     
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
 
@@ -124,8 +124,13 @@ object Main {
 
     val resultGraph = BFSRecommender.buildRecommenderGraph(graph)
     
-    resultGraph.vertices.filter(node => (videoIds.contains(node._1) && node._1 != video_id)).foreach(println)
-
+    resultGraph.vertices.filter(node => (videoIds.contains(node._1) && node._2._1 != video_id)).foreach(node => {
+      println("paths found from " + video_id + " to " + node._2._1 + ": ")
+      node._2._2.foreach(println)
+    })
+    println()
+    println()
+    println("Scores:")
     /*var recommendScores: Array[(Long, String, Double)] = resultGraph.vertices.toArray().foldLeft((0: Int, 0: Double, 0: Int)){
         case ((a, b, c), m) => (
           a + m.get("a").collect{case i: Int => i}.getOrElse(0),
