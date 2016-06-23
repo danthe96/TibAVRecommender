@@ -50,7 +50,7 @@ object Main {
     var videoIds = Set[Long]()
 
     var typeEdges = List[Edge[Double]]()
-    for (line <- Source.fromFile("../data/Filtered/DBPedia_types_filtered_filtered_sorted_count.txt").getLines()) {
+    /*for (line <- Source.fromFile("../data/Filtered/DBPedia_types_filtered_filtered_sorted_count.txt").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_types_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
 
@@ -65,7 +65,9 @@ object Main {
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1.0/2.0)))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0/fields(2).toDouble))
     }
-
+    
+    println("finished importing DBPedia Types")
+*/
     for (line <- Source.fromFile("../data/Filtered/GND_DBPEDIA_filtered_sorted_count.txt").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_gnd_dbp_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
@@ -82,6 +84,8 @@ object Main {
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0))
       //typeEdges :+
     }
+    
+    println("finished importing GND-DBPedia")
 
     for (line <- Source.fromFile("../data/Filtered/tib_gnd_sorted_filtered_sorted_count.txt").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt").getLines()) {
@@ -103,8 +107,10 @@ object Main {
 
     }
     
+    println("finished importing TIB-GND")
     
-    for (line <- Source.fromFile("../data/Filtered/tib_gnd_sorted_filtered_sorted_count.txt").getLines()) {
+    
+    for (line <- Source.fromFile("../data/Filtered/yago_types_filtered_count.txt").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt").getLines()) {
       val fields = line.split(" ")
 
@@ -119,11 +125,12 @@ object Main {
 
       videoIds = videoIds + (vertexId1)
 
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble / fields(3).toDouble))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1 / fields(2).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
 
     }
 
+    println("finished importing YAGO Types")
 
    /* for (line <- Source.fromFile("../data/test1b/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
     val fields = line.split(" ")
