@@ -123,8 +123,6 @@ object Main {
         id - 1
       })
 
-      videoIds = videoIds + (vertexId1)
-
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1 / fields(2).toDouble))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
 
@@ -179,14 +177,14 @@ object Main {
       }
     }).collect()*/
     var recommendScores: Array[(Long, String, Double)] = resultGraph.vertices.map[(Long, String, Double)](node => {
-      val aggr:Double = node._2._2.foldLeft(0.0){(value:Double,el) => value+ (el._1 /el._2)}
+      val aggr:Double = node._2._2.foldLeft(0.0){(value:Double,el) => value + el._1}
       if (aggr == 0) {
         (node._1, node._2._1, -0.0)
       } else {
         (node._1, node._2._1, aggr)
       }
     }).collect()
-    recommendScores = recommendScores.filter(score => (videoIds.contains(score._1) && score._2 != video_id)).sortBy(-_._3)
+    recommendScores = recommendScores.filter(score => (videoIds.contains(score._1) && score._2 != video_id)).sortBy(-_._3).take(20);
     recommendScores.indices.foreach(i => { println((i + 1) + ". " + recommendScores(i)._2 + ", Score: " + recommendScores(i)._3) })
 
 
