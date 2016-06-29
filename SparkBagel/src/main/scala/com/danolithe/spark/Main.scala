@@ -19,6 +19,13 @@ import java.io.File
 import java.io.FileReader
 import scala.io.Source
 import scala.collection.mutable.HashMap
+import com.danolithe.spark.NodeType
+import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.NodeType
+
+ object NodeType extends Enumeration {
+    type NodeType = Value
+    val VIDEO, GND, DBPEDIA, YAGO = Value
+}
 
 object Main {
 
@@ -47,7 +54,11 @@ object Main {
 
     var id: Int = 0
     var nodeNames = HashMap[String, Long]()
+    
     var videoIds = Set[Long]()
+    var gndIds = Set[Long]()
+    var dbpIds = Set[Long]()
+    var yagoIds = Set[Long]()
 
     var typeEdges = List[Edge[Double]]()
     /*for (line <- Source.fromFile("../data/Filtered/DBPedia_types_filtered_filtered_sorted_count.txt").getLines()) {
@@ -80,6 +91,10 @@ object Main {
         id += 1
         id - 1
       })
+      
+      gndIds = gndIds + (vertexId1)
+      dbpIds = dbpIds + (vertexId2)
+      
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1.0))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0))
       //typeEdges :+
@@ -101,6 +116,7 @@ object Main {
       })
 
       videoIds = videoIds + (vertexId1)
+      gndIds = gndIds + (vertexId2)
 
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble / fields(3).toDouble))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
@@ -122,6 +138,9 @@ object Main {
         id += 1
         id - 1
       })
+      
+      dbpIds = dbpIds + (vertexId1)
+      yagoIds = yagoIds + (vertexId2)
 
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1 / fields(2).toDouble))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
@@ -144,12 +163,21 @@ object Main {
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 0.5 * (1.0/fields(2).toDouble)))
     }*/
     
-    
-    
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
 
-    val nodes: RDD[(VertexId, (String, Set[(Double, Int, List[String])], Set[Long], Boolean, Boolean))] = sc.parallelize(nodeNames.toSeq.map { case (e1, e2) => (e2, (e1, Set[(Double, Int, List[String])](), Set[Long](), e1 == video_id, videoIds.contains(e2))) })
-    val graph: Graph[(String, Set[(Double, Int, List[String])], Set[Long], Boolean, Boolean), Double] = Graph(nodes, edges)
+    // RDD[(ID, (name, Set[(path_len, path_nodecount, path_nodenames, path_type)], visited, isTarget, nodeType)))]
+    val nodes: RDD[(VertexId, (String, Set[(Double, Int, List[String], NodeType)], Set[Long], Boolean, NodeType))] = sc.parallelize(nodeNames.toSeq.map (e => {
+        if(videoIds.contains(e._2)){
+           (e._2, (e._1, Set[(Double, Int, List[String], NodeType)](), Set[Long](), e._1 == video_id, NodeType.VIDEO)) 
+        } else if (gndIds.contains(e._2)){
+           (e._2, (e._1, Set[(Double, Int, List[String], NodeType)](), Set[Long](), e._1 == video_id, NodeType.GND))
+        } else if (dbpIds.contains(e._2)){
+          (e._2, (e._1, Set[(Double, Int, List[String], NodeType)](), Set[Long](), e._1 == video_id, NodeType.DBPEDIA))
+        } else{
+          (e._2, (e._1, Set[(Double, Int, List[String], NodeType)](), Set[Long](), e._1 == video_id, NodeType.YAGO))
+        }
+    }))
+    val graph: Graph[(String, Set[(Double, Int, List[String], NodeType)], Set[Long], Boolean, NodeType), Double] = Graph(nodes, edges)
 
     val resultGraph = BFSRecommender.buildRecommenderGraph(graph)
     
