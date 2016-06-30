@@ -104,7 +104,7 @@ object Main {
     
     println("finished importing GND-DBPedia")
 
-    for (line <- Source.fromFile("../data/Filtered/tib_gnd_sorted_filtered_sorted_count.txt").getLines()) {
+    for (line <- Source.fromFile("../data/Filtered/tib_gnd_sorted_count_with_gnd.txt").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt").getLines()) {
       val fields = line.split(" ")
 
