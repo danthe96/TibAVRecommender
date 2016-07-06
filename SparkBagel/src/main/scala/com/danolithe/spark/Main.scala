@@ -58,9 +58,9 @@ object Main {
     var dbpIds = Set[Long]()
     var yagoIds = Set[Long]()
     var dboIds = Set [Long]()
-
+    
     var typeEdges = List[Edge[Double]]()
-    for (line <- Source.fromFile("../data/Filtered/DBPedia_types_filtered_sorted_count.txt")("UTF-8").getLines()) {
+    /*for (line <- Source.fromFile("../data/Filtered/DBPedia_types_filtered_sorted_count.txt")("UTF-8").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_types_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
 
@@ -80,7 +80,7 @@ object Main {
     }
     
     println("finished importing DBPedia Types")
-
+*/
     for (line <- Source.fromFile("../data/Filtered/GND_DBPEDIA_filtered_sorted_count.txt")("UTF-8").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_gnd_dbp_filtered_sorted_count.txt")("UTF-8").getLines()) {
       val fields = line.split(" ")
@@ -98,7 +98,7 @@ object Main {
       dbpIds = dbpIds + (vertexId2)
       
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1.0))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, (1.0/3.0)*1.0))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0))
       //typeEdges :+
     }
     
@@ -145,35 +145,35 @@ object Main {
       dbpIds = dbpIds + (vertexId1)
       yagoIds = yagoIds + (vertexId2)
 
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (2.0/3.0)*(1 / fields(2).toDouble)))//(1.0/3.0)*(1 / fields(2).toDouble)))
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1 / fields(2).toDouble)))//(1.0/3.0)*(1 / fields(2).toDouble)))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
 
     }
 
     println("finished importing YAGO Types")
     
-    for (line <- Source.fromFile("../data/Filtered/yago_supertypes_filtered_sorted_count.txt")("UTF-8").getLines()) {
-    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
-      val fields = line.split(" ")
-
-      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
-        id += 1
-        id - 1
-      })
-      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
-        id += 1
-        id - 1
-      })
-      
-      yagoIds = yagoIds + (vertexId1)
-      yagoIds = yagoIds + (vertexId2)
-
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1 / fields(2).toDouble))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
-
-    }
-
-    println("finished importing YAGO super types")
+//    for (line <- Source.fromFile("../data/Filtered/yago_supertypes_filtered_sorted_count.txt")("UTF-8").getLines()) {
+//    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
+//      val fields = line.split(" ")
+//
+//      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+//        id += 1
+//        id - 1
+//      })
+//      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+//        id += 1
+//        id - 1
+//      })
+//      
+//      yagoIds = yagoIds + (vertexId1)
+//      yagoIds = yagoIds + (vertexId2)
+//
+//      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1 / fields(2).toDouble))
+//      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
+//
+//    }
+//
+//    println("finished importing YAGO super types")
 
    /* for (line <- Source.fromFile("../data/test1b/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
     val fields = line.split(" ")
@@ -266,10 +266,7 @@ object Main {
       else {
           (0, vd._2)
         }
-    })).vertices.filter(vertexVal => {
-      if(vertexVal._2._1 != Int.MaxValue)
-        print(vertexVal._2._1+" ")
-      vertexVal._2._1 != Int.MaxValue})
+    })).vertices.filter(vertexVal =>  vertexVal._2._1 != Int.MaxValue)
     sourceRDD.cache()
     bfsGraph.vertices.foreach(vertext => {
       if(vertext._2._1 != Int.MaxValue)
@@ -279,7 +276,7 @@ object Main {
     
     
     
-    recommendScores.foreach(item => {
+    val jaccard = recommendScores.map(item => {
       val targetRDD = BFS.buildBfsGraph(bfsGraph.mapVertices((vertexId, vd) => {
         if(vertexId != item._1)
           vd
@@ -287,11 +284,21 @@ object Main {
           (0, vd._2)
         }
       })).vertices.filter(vertexVal => vertexVal._2._1 != Int.MaxValue)
+      if (item._2 == "http://av.tib.eu/resource/video/15727") {
+        targetRDD.foreach(vertex => print(vertex._2._2 + " "))
+      }
       val jaccardSimilarityA : Double = (sourceRDD.intersection(targetRDD)).count.toDouble
       val jaccardSimilarityB : Double = (sourceRDD.union(targetRDD)).count.toDouble
       println("Intersection size: "+jaccardSimilarityA+", Union size: "+jaccardSimilarityB) 
       println("Jaccard Similarity of " + item._2 + ": " + (jaccardSimilarityA/jaccardSimilarityB))
+      jaccardSimilarityA/jaccardSimilarityB
     })
+    var durchschnitt = jaccard.aggregate(0.0)({ (sum, ch) => sum + ch }, { (p1, p2) => p1 + p2 })
+    var erwartungswert2 = jaccard.aggregate(0.0)({ (sum, ch) => sum + ((ch*100).toInt)/100.0 }, { (p1, p2) => p1 + p2 })
+    var erwartungswert3 = jaccard.aggregate(0.0)({ (sum, ch) => sum + ((ch*1000).toInt)/1000.0 }, { (p1, p2) => p1 + p2 })
+    println("Durchschnitt: " + (durchschnitt/jaccard.size.toDouble))
+    println("Erwartungswert " + erwartungswert2)
+    println("Erwartungswert " + erwartungswert3)
     
     
     
