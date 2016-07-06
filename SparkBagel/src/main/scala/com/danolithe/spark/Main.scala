@@ -59,7 +59,7 @@ object Main {
     var yagoIds = Set[Long]()
     var dboIds = Set [Long]()
 
-    var typeEdges = List[Edge[Double]]()/*
+    var typeEdges = List[Edge[Double]]()
     for (line <- Source.fromFile("../data/Filtered/DBPedia_types_filtered_sorted_count.txt")("UTF-8").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_types_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
@@ -80,9 +80,9 @@ object Main {
     }
     
     println("finished importing DBPedia Types")
-*/
+
     for (line <- Source.fromFile("../data/Filtered/GND_DBPEDIA_filtered_sorted_count.txt")("UTF-8").getLines()) {
-    //for (line <- Source.fromFile("../data/test1b/t1_gnd_dbp_filtered_sorted_count.txt").getLines()) {
+    //for (line <- Source.fromFile("../data/test1b/t1_gnd_dbp_filtered_sorted_count.txt")("UTF-8").getLines()) {
       val fields = line.split(" ")
 
       val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
@@ -98,14 +98,14 @@ object Main {
       dbpIds = dbpIds + (vertexId2)
       
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1.0))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, (1.0/3.0)*1.0))
       //typeEdges :+
     }
     
     println("finished importing GND-DBPedia")
 
     for (line <- Source.fromFile("../data/Filtered/tib_gnd_sorted_count_with_gnd.txt")("UTF-8").getLines()) {
-    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt").getLines()) {
+    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
       val fields = line.split(" ")
 
       val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
@@ -128,8 +128,9 @@ object Main {
     println("finished importing TIB-GND")
     
     
+
     for (line <- Source.fromFile("../data/Filtered/yago_types_filtered_count.txt")("UTF-8").getLines()) {
-    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt").getLines()) {
+    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
       val fields = line.split(" ")
 
       val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
@@ -144,15 +145,15 @@ object Main {
       dbpIds = dbpIds + (vertexId1)
       yagoIds = yagoIds + (vertexId2)
 
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1.0/3.0)*(1 / fields(2).toDouble)))
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (2.0/3.0)*(1 / fields(2).toDouble)))//(1.0/3.0)*(1 / fields(2).toDouble)))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
 
     }
 
     println("finished importing YAGO Types")
-    /*
+    
     for (line <- Source.fromFile("../data/Filtered/yago_supertypes_filtered_sorted_count.txt")("UTF-8").getLines()) {
-    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt").getLines()) {
+    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
       val fields = line.split(" ")
 
       val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
@@ -173,7 +174,7 @@ object Main {
     }
 
     println("finished importing YAGO super types")
-*/
+
    /* for (line <- Source.fromFile("../data/test1b/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
     val fields = line.split(" ")
 
@@ -249,37 +250,43 @@ object Main {
     }).collect().filter(score => (videoIds.contains(score._1) && score._2 != video_id)).sortBy(-_._3).take(20);
     
     resultGraph.unpersist(blocking = false)
-    graph.cache()
     
     println()
     println()
     println("Applying Jaccard Similarity...")
     
-    val bfsGraph = graph.mapVertices((vertexId, vd)  => Double.PositiveInfinity)
+    val bfsGraph = graph.mapVertices((vertexId, vd)  => (Int.MaxValue, vd._5))
     println("Prepared bfs graph...")
     
-    graph.unpersist(blocking = false)
     bfsGraph.cache()
     
     val sourceRDD = BFS.buildBfsGraph(bfsGraph.mapVertices((vertexId, vd) => {
       if(vertexId != nodeNames.get(video_id).get)
         vd
       else {
-          println("Taged source video")
-          0.0
+          (0, vd._2)
         }
-    })).vertices.filter(vertexVal => vertexVal._2 != Double.PositiveInfinity)
+    })).vertices.filter(vertexVal => {
+      if(vertexVal._2._1 != Int.MaxValue)
+        print(vertexVal._2._1+" ")
+      vertexVal._2._1 != Int.MaxValue})
+    sourceRDD.cache()
+    bfsGraph.vertices.foreach(vertext => {
+      if(vertext._2._1 != Int.MaxValue)
+        println(vertext._2._1)
+    })
     println(sourceRDD.count + ", bfsVertices: " + bfsGraph.vertices.count)
+    
+    
     
     recommendScores.foreach(item => {
       val targetRDD = BFS.buildBfsGraph(bfsGraph.mapVertices((vertexId, vd) => {
         if(vertexId != item._1)
           vd
         else {
-          println("Taged video Id: " + item._1)
-          0.0
+          (0, vd._2)
         }
-      })).vertices.filter(vertexVal => vertexVal._2 != Double.PositiveInfinity)
+      })).vertices.filter(vertexVal => vertexVal._2._1 != Int.MaxValue)
       val jaccardSimilarityA : Double = (sourceRDD.intersection(targetRDD)).count.toDouble
       val jaccardSimilarityB : Double = (sourceRDD.union(targetRDD)).count.toDouble
       println("Intersection size: "+jaccardSimilarityA+", Union size: "+jaccardSimilarityB) 
