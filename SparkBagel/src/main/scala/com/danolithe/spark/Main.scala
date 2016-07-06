@@ -98,7 +98,7 @@ object Main {
       dbpIds = dbpIds + (vertexId2)
       
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1.0))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, (1.0/3.0)*1.0))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0))
       //typeEdges :+
     }
     
@@ -208,7 +208,7 @@ object Main {
         Set[(             //Set for paths
           Double,         //Path weight
           List[String])], //Pathlist
-        Set[Long],        //Set of allready reached nodes
+        Set[Long],        //Set of already reached nodes
         Boolean,          //Start node
         String),          //Node type
         Double            //Edge weight
@@ -240,14 +240,16 @@ object Main {
         (node._1, node._2._1, aggr._1 / aggr._2)
       }
     }).collect()*/
-    var recommendScores: Array[(Long, String, Double)] = resultGraph.vertices.map[(Long, String, Double)](node => {
+    var recommendationScores: Array[(Long, String, Double, Set[(Double, List[String])])] = resultGraph.vertices.map[(Long, String, Double, Set[(Double, List[String])])](node => {
       val aggr:Double = node._2._2.foldLeft(0.0){(value:Double,el) => value + el._1}
       if (aggr == 0) {
-        (node._1, node._2._1, -0.0)
+        (node._1, node._2._1, -0.0, node._2._2)
       } else {
-        (node._1, node._2._1, aggr)
+        (node._1, node._2._1, aggr, node._2._2)
       }
     }).collect().filter(score => (videoIds.contains(score._1) && score._2 != video_id)).sortBy(-_._3).take(20);
+    
+    var recommendationScoresFiltered: Array[(Long, String, Double)] = recommendationScores.map(node => (node._1, node._2, node._3));
     
     resultGraph.unpersist(blocking = false)
     
@@ -266,10 +268,7 @@ object Main {
       else {
           (0, vd._2)
         }
-    })).vertices.filter(vertexVal => {
-      if(vertexVal._2._1 != Int.MaxValue)
-        print(vertexVal._2._1+" ")
-      vertexVal._2._1 != Int.MaxValue})
+    })).vertices.filter(vertexVal => vertexVal._2._1 != Int.MaxValue)
     sourceRDD.cache()
     bfsGraph.vertices.foreach(vertext => {
       if(vertext._2._1 != Int.MaxValue)
@@ -279,7 +278,7 @@ object Main {
     
     
     
-    recommendScores.foreach(item => {
+    recommendationScoresFiltered.foreach(item => {
       val targetRDD = BFS.buildBfsGraph(bfsGraph.mapVertices((vertexId, vd) => {
         if(vertexId != item._1)
           vd
@@ -300,7 +299,59 @@ object Main {
     println()
     println("Scores:")    
     
-    recommendScores.indices.foreach(i => { println((i + 1) + ". " + recommendScores(i)._2 + ", Score: " + recommendScores(i)._3) })
+    recommendationScoresFiltered.indices.foreach(i => { println((i + 1) + ". " + recommendationScoresFiltered(i)._2 + ", Score: " + recommendationScoresFiltered(i)._3) })
+    
+    println()
+    println()
+    println("Stärkste DBP Entitäten in den Pfaden:")    
+    
+    
+    recommendationScores.foreach( x =>  {
+      var dbpNodeScores = HashMap[String, Double]().withDefaultValue(0.0)
+      println("Video " + x._2)
+      x._4.map(z => {
+        if(z._2.size>=3){
+          
+          var thirdLastElementName = z._2.reverse(1)
+          var thirdLastElementId = nodeNames(thirdLastElementName)
+          //println("third last element " + thirdLastElementName + " " + thirdLastElementId)
+          if (dbpIds.contains(thirdLastElementId)){
+            dbpNodeScores(thirdLastElementName) += z._1
+          }
+          
+        } 
+      } )
+      
+      dbpNodeScores.toSeq.sortBy(-_._2).take(3).foreach(y => println("Score " +y + " " ))
+      })
+      
+    println()
+    println()
+    println("Stärkste YAGO Types in den Pfaden:")    
+    
+    recommendationScores.foreach( x =>  {
+      var yagoNodeScores = HashMap[String, Double]().withDefaultValue(0.0)
+      println("Video " + x._2)
+      x._4.map(z => {
+        
+        if(z._2.size>=3){
+          
+          var yagoTypesInPath = z._2.filter(y => {
+            var elementID = nodeNames(y)
+            yagoIds.contains(elementID)
+          })
+          yagoTypesInPath.foreach (y => {
+            yagoNodeScores(y) += z._1
+          })
+          
+        }
+      } )
+      
+      yagoNodeScores.toSeq.sortBy(-_._2).take(3).foreach(y => println("Score " +y + " " ))
+      })
+      
+      
+      
     
 
 //    resultGraph.vertices.saveAsTextFile(OUTPUT_PATH + "vertices.txt")
