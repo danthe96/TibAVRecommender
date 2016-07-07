@@ -293,12 +293,9 @@ object Main {
       println("Jaccard Similarity of " + item._2 + ": " + (jaccardSimilarityA/jaccardSimilarityB))
       jaccardSimilarityA/jaccardSimilarityB
     })
-    var durchschnitt = jaccard.aggregate(0.0)({ (sum, ch) => sum + ch }, { (p1, p2) => p1 + p2 })
-    var erwartungswert2 = jaccard.aggregate(0.0)({ (sum, ch) => sum + ((ch*100).toInt)/100.0 }, { (p1, p2) => p1 + p2 })
-    var erwartungswert3 = jaccard.aggregate(0.0)({ (sum, ch) => sum + ((ch*1000).toInt)/1000.0 }, { (p1, p2) => p1 + p2 })
-    println("Durchschnitt: " + (durchschnitt/jaccard.size.toDouble))
-    println("Erwartungswert " + erwartungswert2)
-    println("Erwartungswert " + erwartungswert3)
+    val durchschnitt = (jaccard.aggregate(0.0)({ (sum, ch) => sum + ch }, { (p1, p2) => p1 + p2 }))/jaccard.size.toDouble
+    var recommendScoresJaccardHigh = recommendScores.filter(score => jaccard(recommendScores.indexOf(score)) > durchschnitt)
+    var recommendScoresJaccardLow = recommendScores.filter(score => jaccard(recommendScores.indexOf(score)) <= durchschnitt)
     
     
     
