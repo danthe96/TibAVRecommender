@@ -58,8 +58,31 @@ object Main {
     var dbpIds = Set[Long]()
     var yagoIds = Set[Long]()
     var dboIds = Set [Long]()
+    var linkToIds = Set [Long]()
 
+    
     var typeEdges = List[Edge[Double]]()
+    /*for (line <- Source.fromFile("../data/Filtered/PAGE_LINKS_sorted_count.txt")("UTF-8").getLines()) {
+      val fields = line.split(" ")
+
+      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+      
+      linkToIds = linkToIds + (vertexId2)
+      
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble / fields(3).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
+    }
+    
+    println("finished importing DBPedia Links")
+*/
+    
     for (line <- Source.fromFile("../data/Filtered/DBPedia_types_filtered_sorted_count.txt")("UTF-8").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_types_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
@@ -151,7 +174,7 @@ object Main {
     }
 
     println("finished importing YAGO Types")
-    
+    /*
     for (line <- Source.fromFile("../data/Filtered/yago_supertypes_filtered_sorted_count.txt")("UTF-8").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
       val fields = line.split(" ")
@@ -174,7 +197,7 @@ object Main {
     }
 
     println("finished importing YAGO super types")
-
+*/
    /* for (line <- Source.fromFile("../data/test1b/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
     val fields = line.split(" ")
 
@@ -301,6 +324,31 @@ object Main {
     
     recommendationScoresFiltered.indices.foreach(i => { println((i + 1) + ". " + recommendationScoresFiltered(i)._2 + ", Score: " + recommendationScoresFiltered(i)._3) })
     
+    
+    println()
+    println()
+    println("Stärkste DBP Entitäten des Videos:")    
+    
+    var dbpNodeScoresForStartVid = HashMap[String, Double]().withDefaultValue(0.0)
+      
+    recommendationScores.foreach( x =>  {
+      println("Video " + x._2)
+      x._4.map(z => {
+        if(z._2.size>=3){
+          
+          var thirdElementName = z._2(1)
+          var thirdElementId = nodeNames(thirdElementName)
+          if (dbpIds.contains(thirdElementId)){
+            dbpNodeScoresForStartVid(thirdElementName) += z._1
+          }
+          
+        } 
+      } )
+      
+      })
+    dbpNodeScoresForStartVid.toSeq.sortBy(-_._2).take(10).foreach(y => println("Score " +y + " " ))
+      
+    
     println()
     println()
     println("Stärkste DBP Entitäten in den Pfaden:")    
@@ -340,12 +388,16 @@ object Main {
             var elementID = nodeNames(y)
             yagoIds.contains(elementID)
           })
+          var dboTypesInPath = z._2.filter(y => {
+            var elementID = nodeNames(y)
+            dboIds.contains(elementID)
+          })
           yagoTypesInPath.foreach (y => {
             yagoNodeScores(y) += z._1
           })
-          
+          println("Yago Types in path " + yagoTypesInPath.size + "DBO Types in path " + dboTypesInPath.size)
         }
-      } )
+      })
       
       yagoNodeScores.toSeq.sortBy(-_._2).take(3).foreach(y => println("Score " +y + " " ))
       })
