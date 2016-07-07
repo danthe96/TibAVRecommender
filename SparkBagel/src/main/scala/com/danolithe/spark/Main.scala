@@ -82,7 +82,7 @@ object Main {
     
     println("finished importing DBPedia Links")
 */
-    
+    /*
     for (line <- Source.fromFile("../data/Filtered/DBPedia_types_filtered_sorted_count.txt")("UTF-8").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_types_filtered_sorted_count.txt").getLines()) {
       val fields = line.split(" ")
@@ -97,6 +97,7 @@ object Main {
       })
       
       dboIds = dboIds + (vertexId2)
+      dbpIds = dbpIds + (vertexId1)
       
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1.0/3.0)*1.0))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0/fields(2).toDouble))
@@ -301,7 +302,7 @@ object Main {
     
     
     
-    recommendationScoresFiltered.foreach(item => {
+    val jaccard = recommendationScores.map(item => {
       val targetRDD = BFS.buildBfsGraph(bfsGraph.mapVertices((vertexId, vd) => {
         if(vertexId != item._1)
           vd
@@ -314,13 +315,12 @@ object Main {
       }
       val jaccardSimilarityA : Double = (sourceRDD.intersection(targetRDD)).count.toDouble
       val jaccardSimilarityB : Double = (sourceRDD.union(targetRDD)).count.toDouble
-      println("Intersection size: "+jaccardSimilarityA+", Union size: "+jaccardSimilarityB) 
       println("Jaccard Similarity of " + item._2 + ": " + (jaccardSimilarityA/jaccardSimilarityB))
       jaccardSimilarityA/jaccardSimilarityB
     })
     val durchschnitt = (jaccard.aggregate(0.0)({ (sum, ch) => sum + ch }, { (p1, p2) => p1 + p2 }))/jaccard.size.toDouble
-    var recommendScoresJaccardHigh = recommendScores.filter(score => jaccard(recommendScores.indexOf(score)) > durchschnitt)
-    var recommendScoresJaccardLow = recommendScores.filter(score => jaccard(recommendScores.indexOf(score)) <= durchschnitt)
+    var recommendationScoresJaccardHigh = recommendationScores.filter(score => jaccard(recommendationScores.indexOf(score)) > durchschnitt)
+    var recommendationScoresJaccardLow = recommendationScores.filter(score => jaccard(recommendationScores.indexOf(score)) <= durchschnitt)
     
     
     
@@ -330,6 +330,11 @@ object Main {
     println("Scores:")    
     
     recommendationScoresFiltered.indices.foreach(i => { println((i + 1) + ". " + recommendationScoresFiltered(i)._2 + ", Score: " + recommendationScoresFiltered(i)._3) })
+    println()
+    println()
+    println("Scores with Jaccard-Filtering:") 
+    
+    recommendationScoresJaccardHigh.indices.foreach(i => { println((i + 1) + ". " + recommendationScoresFiltered(i)._2 + ", Score: " + recommendationScoresFiltered(i)._3) })
     
     
     println()
@@ -338,7 +343,7 @@ object Main {
     
     var dbpNodeScoresForStartVid = HashMap[String, Double]().withDefaultValue(0.0)
       
-    recommendationScores.foreach( x =>  {
+    recommendationScoresJaccardHigh.foreach( x =>  {
       println("Video " + x._2)
       x._4.map(z => {
         if(z._2.size>=3){
@@ -361,7 +366,7 @@ object Main {
     println("Stärkste DBP Entitäten in den Pfaden:")    
     
     
-    recommendationScores.foreach( x =>  {
+    recommendationScoresJaccardHigh.foreach( x =>  {
       var dbpNodeScores = HashMap[String, Double]().withDefaultValue(0.0)
       println("Video " + x._2)
       x._4.map(z => {
@@ -384,7 +389,7 @@ object Main {
     println()
     println("Stärkste YAGO Types in den Pfaden:")    
     
-    recommendationScores.foreach( x =>  {
+    recommendationScoresJaccardHigh.foreach( x =>  {
       var yagoNodeScores = HashMap[String, Double]().withDefaultValue(0.0)
       println("Video " + x._2)
       x._4.map(z => {
@@ -402,7 +407,6 @@ object Main {
           yagoTypesInPath.foreach (y => {
             yagoNodeScores(y) += z._1
           })
-          println("Yago Types in path " + yagoTypesInPath.size + "DBO Types in path " + dboTypesInPath.size)
         }
       })
       
