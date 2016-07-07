@@ -103,7 +103,7 @@ object Main {
     }
     
     println("finished importing DBPedia Types")
-
+*/
     for (line <- Source.fromFile("../data/Filtered/GND_DBPEDIA_filtered_sorted_count.txt")("UTF-8").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_gnd_dbp_filtered_sorted_count.txt")("UTF-8").getLines()) {
       val fields = line.split(" ")
@@ -168,7 +168,7 @@ object Main {
       dbpIds = dbpIds + (vertexId1)
       yagoIds = yagoIds + (vertexId2)
 
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (2.0/3.0)*(1 / fields(2).toDouble)))//(1.0/3.0)*(1 / fields(2).toDouble)))
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1 / fields(2).toDouble)))//(1.0/3.0)*(1 / fields(2).toDouble)))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
 
     }
@@ -291,7 +291,7 @@ object Main {
       else {
           (0, vd._2)
         }
-    })).vertices.filter(vertexVal => vertexVal._2._1 != Int.MaxValue)
+    })).vertices.filter(vertexVal =>  vertexVal._2._1 != Int.MaxValue)
     sourceRDD.cache()
     bfsGraph.vertices.foreach(vertext => {
       if(vertext._2._1 != Int.MaxValue)
@@ -309,11 +309,18 @@ object Main {
           (0, vd._2)
         }
       })).vertices.filter(vertexVal => vertexVal._2._1 != Int.MaxValue)
+      if (item._2 == "http://av.tib.eu/resource/video/15727") {
+        targetRDD.foreach(vertex => print(vertex._2._2 + " "))
+      }
       val jaccardSimilarityA : Double = (sourceRDD.intersection(targetRDD)).count.toDouble
       val jaccardSimilarityB : Double = (sourceRDD.union(targetRDD)).count.toDouble
       println("Intersection size: "+jaccardSimilarityA+", Union size: "+jaccardSimilarityB) 
       println("Jaccard Similarity of " + item._2 + ": " + (jaccardSimilarityA/jaccardSimilarityB))
+      jaccardSimilarityA/jaccardSimilarityB
     })
+    val durchschnitt = (jaccard.aggregate(0.0)({ (sum, ch) => sum + ch }, { (p1, p2) => p1 + p2 }))/jaccard.size.toDouble
+    var recommendScoresJaccardHigh = recommendScores.filter(score => jaccard(recommendScores.indexOf(score)) > durchschnitt)
+    var recommendScoresJaccardLow = recommendScores.filter(score => jaccard(recommendScores.indexOf(score)) <= durchschnitt)
     
     
     
