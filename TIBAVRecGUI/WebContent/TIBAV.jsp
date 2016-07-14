@@ -76,7 +76,7 @@
 			<div class="wrap">
 				<div id="id70" style="display: none"></div>
 				<div vocab="http://schema.org/" typeof="Movie">
-					<iframe height="600" scrolling="no"
+					<iframe height="600" scrolling="no" style="padding-bottom: 24px;"
 						src="<%="http://av.tib.eu/player/" + video_id%>" frameborder="0"
 						allowfullscreen></iframe>
 				</div>

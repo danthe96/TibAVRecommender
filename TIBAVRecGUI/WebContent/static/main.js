@@ -1,6 +1,6 @@
 var iframes = document.getElementsByTagName('iframe');
 
-
 iframes[0].onload = function() {
-    document.title = document.getElementsByTagName('videoTitle')[0].concat(" | Knowledge Recommender");
+	document.title = iframes[0].contentWindow.document.getElementById(
+			'videoTitle').concat(" | Knowledge Recommender");
 }

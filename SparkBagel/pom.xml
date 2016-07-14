@@ -123,6 +123,11 @@
 			<artifactId>spark-graphx_2.10</artifactId>
 			<version>1.6.1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.databricks</groupId>
+			<artifactId>spark-csv_2.10</artifactId>
+			<version>1.4.0</version>
+		</dependency>
 	</dependencies>
 	<description>Recommender system for av.tib.eu, part of the Knowledge Mining seminar at HPI.</description>
 </project>
