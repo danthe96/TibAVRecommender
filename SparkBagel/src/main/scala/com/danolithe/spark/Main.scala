@@ -216,22 +216,22 @@ object Main {
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
 
     // RDD[(ID, (name, Set[(path_len, path_nodecount, path_nodenames, path_type)], visited, isTarget, nodeType)))]
-    val nodes: RDD[(VertexId, (String, Set[(Double, List[String])], Set[Long], Boolean, String))] = sc.parallelize(nodeNames.toSeq.map (e => {
+    val nodes: RDD[(VertexId, (String, Set[(Double, List[(String, String)])], Set[Long], Boolean, String))] = sc.parallelize(nodeNames.toSeq.map (e => {
         if(videoIds.contains(e._2)){
-           (e._2, (e._1, Set[(Double, List[String])](), Set[Long](), e._1 == video_id, "VIDEO")) 
+           (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "VIDEO")) 
         } else if (gndIds.contains(e._2)){
-           (e._2, (e._1, Set[(Double, List[String])](), Set[Long](), e._1 == video_id, "GND"))
+           (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "GND"))
         } else if (dbpIds.contains(e._2)){
-          (e._2, (e._1, Set[(Double, List[String])](), Set[Long](), e._1 == video_id, "DBPEDIA"))
+          (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "DBPEDIA"))
         } else{
-          (e._2, (e._1, Set[(Double, List[String])](), Set[Long](), e._1 == video_id, "YAGO"))
+          (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "YAGO"))
         }
     }))
     val graph: Graph[(
         String,           //Node name 
         Set[(             //Set for paths
           Double,         //Path weight
-          List[String])], //Pathlist
+          List[(String, String)])], //Pathlist (Name, Type)
         Set[Long],        //Set of already reached nodes
         Boolean,          //Start node
         String),          //Node type
@@ -264,8 +264,16 @@ object Main {
         (node._1, node._2._1, aggr._1 / aggr._2)
       }
     }).collect()*/
-    var recommendationScores: Array[(Long, String, Double, Set[(Double, List[String])])] = resultGraph.vertices.map[(Long, String, Double, Set[(Double, List[String])])](node => {
-      val aggr:Double = node._2._2.foldLeft(0.0){(value:Double,el) => value + el._1}
+    var recommendationScores: Array[(Long, String, Double, Set[(Double, List[(String, String)])])] = resultGraph.vertices.map[(Long, String, Double, Set[(Double, List[(String, String)])])](node => {
+      val aggr:Double = node._2._2.foldLeft(0.0){
+        (value:Double,el) => {
+          val semanticCount: Double = el._2.count(_._2 == "YAGO")
+          if (semanticCount >= 1)
+            value + (el._1 * (1.0 + 1.0/(semanticCount)))
+          else
+            value + el._1
+        }
+      }
       if (aggr == 0) {
         (node._1, node._2._1, -0.0, node._2._2)
       } else {
@@ -348,7 +356,7 @@ object Main {
       x._4.map(z => {
         if(z._2.size>=3){
           
-          var thirdElementName = z._2(1)
+          var thirdElementName = z._2(1)._1
           var thirdElementId = nodeNames(thirdElementName)
           if (dbpIds.contains(thirdElementId)){
             dbpNodeScoresForStartVid(thirdElementName) += z._1
@@ -372,7 +380,7 @@ object Main {
       x._4.map(z => {
         if(z._2.size>=3){
           
-          var thirdLastElementName = z._2.reverse(1)
+          var thirdLastElementName = z._2.reverse(1)._1
           var thirdLastElementId = nodeNames(thirdLastElementName)
           //println("third last element " + thirdLastElementName + " " + thirdLastElementId)
           if (dbpIds.contains(thirdLastElementId)){
@@ -397,15 +405,15 @@ object Main {
         if(z._2.size>=3){
           
           var yagoTypesInPath = z._2.filter(y => {
-            var elementID = nodeNames(y)
+            var elementID = nodeNames(y._1)
             yagoIds.contains(elementID)
           })
           var dboTypesInPath = z._2.filter(y => {
-            var elementID = nodeNames(y)
+            var elementID = nodeNames(y._1)
             dboIds.contains(elementID)
           })
           yagoTypesInPath.foreach (y => {
-            yagoNodeScores(y) += z._1
+            yagoNodeScores(y._1) += z._1
           })
         }
       })
