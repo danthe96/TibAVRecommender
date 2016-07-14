@@ -48,9 +48,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta charset="UTF-8">
-<title>1/4 Singular support of coherent sheaves</title>
-<meta name="description"
-	content="Singular support is an invariant that can be attached to a coherent sheaf on a derived scheme which is quasi-smooth (a.k.a. derived locally complete intersection). This invariant measures how far a given coherent sheaf is from being perfect. We will explain how the subtle difference between &quot;coherent&quot; and &quot;perfect&quot; is responsible for the appearance of Arthur parameters in the context of geometric Langlands correspondence.">
+<title>KnowledgeRecommender</title>
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, user-scalable=yes">
 <link rel="stylesheet" type="text/css" href="static/less.css">
@@ -237,6 +235,8 @@
 
 		</footer>
 	</div>
+
+	<script src="static/main.js"></script>
 
 </body>
 </html>
