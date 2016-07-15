@@ -29,6 +29,14 @@
 
 			recommendationResult.close();
 			getRecommendations.close();
+
+			PreparedStatement getTitle = db_con.prepareStatement("SELECT title FROM tibav.tibvid WHERE videoid=?");
+			getTitle.setInt(1, video_id);
+			ResultSet titleResult = getTitle.executeQuery();
+			String title = titleResult.getString("title");
+			titleResult.close();
+			getTitle.close();
+
 			db_con.close();
 		} catch (SQLException e) {
 			db_con.close();
@@ -48,7 +56,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta charset="UTF-8">
-<title>KnowledgeRecommender</title>
+<title><%=title%> | KnowledgeRecommender</title>
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, user-scalable=yes">
 <link rel="stylesheet" type="text/css" href="static/less.css">
