@@ -60,6 +60,8 @@ object Main {
     var dboIds = Set [Long]()
     var linkToIds = Set [Long]()
 
+    var superTypeLevels = HashMap[Long, Int]()
+    
     
     var typeEdges = List[Edge[Double]]()
     /*for (line <- Source.fromFile("../data/Filtered/PAGE_LINKS_sorted_count.txt")("UTF-8").getLines()) {
@@ -123,7 +125,7 @@ object Main {
       
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1.0))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0))
-      //typeEdges :+
+      
     }
     
     println("finished importing GND-DBPedia")
@@ -145,7 +147,7 @@ object Main {
       gndIds = gndIds + (vertexId2)
 
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble / fields(3).toDouble))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble / fields(4).toDouble))
 
     }
     
@@ -168,15 +170,16 @@ object Main {
       
       dbpIds = dbpIds + (vertexId1)
       yagoIds = yagoIds + (vertexId2)
-
+      superTypeLevels.getOrElseUpdate(vertexId2, 0)
+      
       typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1 / fields(2).toDouble)))//(1.0/3.0)*(1 / fields(2).toDouble)))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
 
     }
 
     println("finished importing YAGO Types")
-    /*
-    for (line <- Source.fromFile("../data/Filtered/yago_supertypes_filtered_sorted_count.txt")("UTF-8").getLines()) {
+    
+    for (line <- Source.fromFile("../data/Filtered/yago_supertypes_filtered_sorted_count_with_hierarchy_up_to_level13.txt")("UTF-8").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
       val fields = line.split(" ")
 
@@ -192,13 +195,16 @@ object Main {
       yagoIds = yagoIds + (vertexId1)
       yagoIds = yagoIds + (vertexId2)
 
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1 / fields(2).toDouble))
+      superTypeLevels.getOrElseUpdate(vertexId1, fields(4).toInt)
+      superTypeLevels.getOrElseUpdate(vertexId2,fields(5).toInt)
+      
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1 / fields(2).toDouble)))
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
 
     }
 
     println("finished importing YAGO super types")
-*/
+
    /* for (line <- Source.fromFile("../data/test1b/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
     val fields = line.split(" ")
 
@@ -342,7 +348,11 @@ object Main {
     println()
     println("Scores with Jaccard-Filtering:") 
     
-    recommendationScoresJaccardHigh.indices.foreach(i => { println((i + 1) + ". " + recommendationScoresFiltered(i)._2 + ", Score: " + recommendationScoresFiltered(i)._3) })
+    recommendationScores.indices.foreach(i => { 
+      if (recommendationScoresJaccardHigh.contains(recommendationScores(i)) ){
+        println((i + 1) + ". " + recommendationScoresFiltered(i)._2 + ", Score: " + recommendationScoresFiltered(i)._3)
+        } 
+      })
     
     
     println()
@@ -406,7 +416,12 @@ object Main {
           
           var yagoTypesInPath = z._2.filter(y => {
             var elementID = nodeNames(y._1)
-            yagoIds.contains(elementID)
+            if (yagoIds.contains(elementID)){
+              //print("Type level of " + elementID + ": "+ superTypeLevels(elementID))
+              superTypeLevels(elementID)< 2
+            }else {
+              false
+            }
           })
           var dboTypesInPath = z._2.filter(y => {
             var elementID = nodeNames(y._1)
