@@ -64,6 +64,8 @@ object Main {
 
     for ((video_id, vertexId) <- nodeNames) {
       if (videoIds.contains(vertexId)) {
+        print("Running pregel for Video ID " + video_id)
+
         // RDD[(ID, (name, Set[(path_len, path_nodecount, path_nodenames, path_type)], visited, isTarget, nodeType)))]
         val nodes: RDD[(VertexId, (String, Set[(Double, List[(String, String)])], Set[Long], Boolean, String))] = sc.parallelize(nodeNames.toSeq.map(e => {
           if (videoIds.contains(e._2)) {
@@ -220,7 +222,9 @@ object Main {
     println()
     println("Stärkste YAGO Types in den Pfaden:")
 
-    val fw = new FileWriter(OUTPUT_PATH+"out.csv", true)
+    val file = new File(OUTPUT_PATH+"out.csv")
+    file.mkdirs()
+    val fw = new FileWriter(file, true)
     recommendationScoresJaccardHigh.foreach(x => {
       var yagoNodeScores = HashMap[String, Double]().withDefaultValue(0.0)
       println("Video " + x._2)
@@ -245,7 +249,7 @@ object Main {
       val keywords = yagoNodeScores.toSeq.sortBy(-_._2).take(3)
       keywords.foreach(y => println("Score " + y + " "))
 
-      fw.write(video_id.trim() + "," + x._2 + "," + x._3 + ",\'" + keywords.mkString(";")+"\'\n")
+      fw.write(video_id.trim() + "," + x._2 + "," + x._3 + ",\'" + keywords.mkString(";") + "\'\n")
     })
     fw.close()
   }
