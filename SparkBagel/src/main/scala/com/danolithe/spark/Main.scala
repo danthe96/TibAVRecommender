@@ -220,7 +220,7 @@ object Main {
     println()
     println("Stärkste YAGO Types in den Pfaden:")
 
-    val fw = new FileWriter("test.txt", true)
+    val fw = new FileWriter(OUTPUT_PATH+"out.csv", true)
     recommendationScoresJaccardHigh.foreach(x => {
       var yagoNodeScores = HashMap[String, Double]().withDefaultValue(0.0)
       println("Video " + x._2)
@@ -245,7 +245,7 @@ object Main {
       val keywords = yagoNodeScores.toSeq.sortBy(-_._2).take(3)
       keywords.foreach(y => println("Score " + y + " "))
 
-      fw.write(video_id.trim() + "," + x._2 + "," + x._3 + "," + keywords.mkString(";"))
+      fw.write(video_id.trim() + "," + x._2 + "," + x._3 + ",\'" + keywords.mkString(";")+"\'\n")
     })
     fw.close()
   }
