@@ -2,7 +2,7 @@
 	pageEncoding="utf-8" import="java.sql.*"%>
 
 <%
-	int[] recId = {18564, 19017, 15907};
+	int[] recId = { 18564, 19017, 15907 };
 	int video_id = 16350;
 	String logs = "";
 	try {
@@ -12,7 +12,8 @@
 		Connection db_con = DriverManager.getConnection("jdbc:mysql://172.16.65.75:3307/tibav?user=root&password=knowmintibav");
 		try {
 			logs += "Video ID is " + video_id + "\n";
-			PreparedStatement getRecommendations = db_con.prepareStatement("SELECT VID_A, VID_B, score, keywords FROM rec1307 WHERE VID_A=?");
+			PreparedStatement getRecommendations = db_con
+					.prepareStatement("SELECT VIDEO_A, VIDEO_B, score, keywords FROM rec1407 WHERE VIDEO_A=? ORDER BY score DESC LIMIT 3");
 			getRecommendations.setInt(1, video_id);
 			ResultSet recommendationResult = getRecommendations.executeQuery();
 			if (!recommendationResult.first()) {
@@ -64,8 +65,8 @@
 		<header class="header-up">
 			<div class="wrap">
 				<span id="nav-toggle"></span> <a id="logo" href="https://av.tib.eu/"
-					title="Home"> <img src="static/TIB_Logo_AV-Portal.png" alt="TIB-AV"
-					height="105" width="357">
+					title="Home"> <img src="static/TIB_Logo_AV-Portal.png"
+					alt="TIB-AV" height="105" width="357">
 				</a>
 
 
@@ -228,10 +229,10 @@
 				</div>
 			</div>
 
-			<p>
+			<!-- <p>
 				DEBUG<br />
 				<%=logs%>
-			</p>
+			</p> -->
 
 		</footer>
 	</div>
