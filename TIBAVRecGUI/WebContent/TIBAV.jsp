@@ -20,14 +20,13 @@
 				db_con.close();
 				logs += "No results in database\n";
 				//response.sendError(HttpServletResponse.SC_NOT_FOUND);
-				return;
+				//return;
+			} else {
+				for (int i = 0; i < 3 && !recommendationResult.isAfterLast(); i++) {
+					recId[i] = recommendationResult.getInt(2);
+					recommendationResult.next();
+				}
 			}
-
-			for (int i = 0; i < 3 && !recommendationResult.isAfterLast(); i++) {
-				recId[i] = recommendationResult.getInt(2);
-				recommendationResult.next();
-			}
-
 			recommendationResult.close();
 			getRecommendations.close();
 			db_con.close();
@@ -228,11 +227,6 @@
 					</div>
 				</div>
 			</div>
-
-			<!-- <p>
-				DEBUG<br />
-				<%=logs%>
-			</p> -->
 
 		</footer>
 	</div>
