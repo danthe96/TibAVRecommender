@@ -15,10 +15,10 @@ from sets import Set
 #     sources.append(aurl[0].text)
 
 #f = open('yovistoextract_dbpedia.txt', 'r')
-f = open('yovistoextract_dbpedia_filtered.txt', 'r')
+f = open('yovisto_dbpedia_yago.txt', 'r')
 
 f_types = open('DBPedia_types.txt', 'r')
-f_out = open('yovisto_dbp_dbo.txt', 'w')
+f_out = open('yovisto_yago_super3.txt', 'w')
 
 # i = 1
 
@@ -34,18 +34,18 @@ f_out = open('yovisto_dbp_dbo.txt', 'w')
 # 	newline = line[:-2] + '\n'
 #	f_out.write(newline.replace("<", "").replace(">", "").replace(" http://www.w3.org/2004/02/skos/core#subject ", " "))
 
-dbpSet = Set()
-for line in f:
-	dbpSet.add(line.split()[1])
+# dbpSet = Set()
+# for line in f:
+# 	dbpSet.add(line.split()[1])
 
-for line in f_types:
-	try:
-		(key, value) = line.split()
-	except Exception, e:
-		print line.split()
-		continue
-	if key in dbpSet:
-		f_out.write(key + ' ' + value + '\n')
+# for line in f_types:
+# 	try:
+# 		(key, value) = line.split()
+# 	except Exception, e:
+# 		print line.split()
+# 		continue
+# 	if key in dbpSet:
+# 		f_out.write(key + ' ' + value + '\n')
 
 
 # f_dbp_yago = open('yagoDBpediaInstances.tsv', 'r')
@@ -69,73 +69,74 @@ for line in f_types:
 
 # print "finished yagoTypes"
 
-# f_yago_class_dpb_class = open('yagoDBpediaClasses.tsv', 'r')
-# yago_class_dpb_class = {}
-# for line in f_yago_class_dpb_class:
-# 	if line.split()[1] == 'owl:equivalentClass':
-# 		yago_class_dpb_class[line.split()[0]] = line.split()[2]
-# f_yago_class_dpb_class.close()
+f_yago_class_dpb_class = open('yagoDBpediaClasses.tsv', 'r')
+yago_class_dpb_class = {}
+for line in f_yago_class_dpb_class:
+	if line.split()[1] == 'owl:equivalentClass':
+		yago_class_dpb_class[line.split()[0]] = line.split()[2]
+f_yago_class_dpb_class.close()
 
-# print "finished yagoDBpediaClasses"
+print "finished yagoDBpediaClasses"
 
-# f_yago_super = open('yagoTaxonomy.tsv', 'r')
-# yago_super = {}
-# for line in f_yago_super:
-# 	if line.split()[2] == 'rdfs:subClassOf':
-# 		if line.split()[1] not in f_yago_super:
-# 			yago_super[line.split()[1]] = Set([line.split()[3]])
-# 		else:
-# 			yago_super[line.split()[1]].add(line.split()[3])
-# f_yago_super.close()
+dpb_class_yago_class = {}
+for yago in yago_class_dpb_class.keys():
+	dpb_class_yago_class[yago_class_dpb_class[yago]] = yago
 
-# print "finished yagoDBpediaClasses" + str(len(yago_super.keys()))
+f_yago_super = open('yagoTaxonomy.tsv', 'r')
+yago_super = {}
+for line in f_yago_super:
+	if line.split()[2] == 'rdfs:subClassOf':
+			yago_super[line.split()[1]] = line.split()[3]
+f_yago_super.close()
 
-# ysuperSet0 = Set()
-# ysuperSet1 = Set()
-# ysuperSet2 = Set()
-# ysuperSet3 = Set()
-# dbpSet = Set()
-# for line in f:
-# 	if line.split()[2] not in dbpSet:
-# 		dbp_entity = line.split()[2]
-# 		if dbp_entity in dbp_yago:
-# 			yago_entity = dbp_yago[dbp_entity]
-# 			yago_classes = yago_yago_class[yago_entity]
-# 			for yclass in yago_classes:
-# 				# f_out.write(dbp_entity.replace("<", "").replace(">", "") + " " + yago_class_dpb_class[yclass].replace("<", "").replace(">", "") + "\n")
-# 				if yclass in yago_super:
-# 					yagosuper = yago_super[yclass]
-# 					for ysuper in yagosuper:
-# 						f_out.write(yago_class_dpb_class[yclass].replace("<", "").replace(">", "") + " " + yago_class_dpb_class[ysuper].replace("<", "").replace(">", "") + "\n")
-# 						ysuperSet0.add(yclass)
-# 						ysuperSet1.add(ysuper)
-# 			dbpSet.add(dbp_entity)
+print "finished yagoDBpediaClasses" + str(len(yago_super.keys()))
 
-# print len(ysuperSet0)
-# print len(ysuperSet1)
+dbp_yago_types = Set()
+for line in f:
+	dbpyagoclass = "<"+line.split()[1]+">"
+	dbp_yago_types.add(dbpyagoclass)
+print "finished dbp_yago_types set"
 
-# for yclass in ysuperSet1:
-# 	if yclass in yago_super and yclass not in ysuperSet0:
-# 		yagosuper = yago_super[yclass]
-# 		for ysuper in yagosuper:
-# 			f_out.write(yago_class_dpb_class[yclass].replace("<", "").replace(">", "") + " " + yago_class_dpb_class[ysuper].replace("<", "").replace(">", "") + "\n")
-# 			ysuperSet2.add(ysuper)
+yago_types = Set()
+for dbpyago in dbp_yago_types:
+	yago_types.add(dpb_class_yago_class[dbpyago])
 
-# print len(ysuperSet2)
+yago_types0 = yago_types.copy()
+yago_types1 = Set()
+for yagoclass in yago_types0:
+	try:
+		yagosuper = yago_super[yagoclass]
+		f_out.write(yago_class_dpb_class[yagoclass].replace("<", "").replace(">", "") + ' ' + yago_class_dpb_class[yagosuper].replace("<", "").replace(">", "")+"\n")
+		if yagosuper not in yago_types:
+			yago_types1.add(yagosuper)
+			yago_types.add(yagosuper)
+	except Exception, e:
+		continue
+print "finished first level"
 
-# for yclass in ysuperSet2:
-# 	if yclass in yago_super and yclass not in ysuperSet0 and yclass not in ysuperSet1:
-# 		yagosuper = yago_super[yclass]
-# 		for ysuper in yagosuper:
-# 			f_out.write(yago_class_dpb_class[yclass].replace("<", "").replace(">", "") + " " + yago_class_dpb_class[ysuper].replace("<", "").replace(">", "") + "\n")
-# 			ysuperSet3.add(ysuper)
+yago_types2 = Set()
+for yagoclass in yago_types1:
+	try:
+		yagosuper = yago_super[yagoclass]
+		f_out.write(yago_class_dpb_class[yagoclass].replace("<", "").replace(">", "") + ' ' + yago_class_dpb_class[yagosuper].replace("<", "").replace(">", "")+"\n")
+		if yagosuper not in yago_types:
+			yago_types2.add(yagosuper)
+			yago_types.add(yagosuper)
+	except Exception, e:
+		continue
+print "finished second level"
 
-# print len(ysuperSet3)
-
-
-
-
-
+yago_types3 = Set()
+for yagoclass in yago_types2:
+	try:
+		yagosuper = yago_super[yagoclass]
+		f_out.write(yago_class_dpb_class[yagoclass].replace("<", "").replace(">", "") + ' ' + yago_class_dpb_class[yagosuper].replace("<", "").replace(">", "")+"\n")
+		if yagosuper not in yago_types:
+			yago_types3.add(yagosuper)
+			yago_types.add(yagosuper)
+	except Exception, e:
+		continue
+print "finished third level"
 
 
 #nt = pyRdfa(options=options).rdf_from_source('http://blog.yovisto.com/roger-cotes-and-newtons-principia-mathematica/', outputFormat='nt')
