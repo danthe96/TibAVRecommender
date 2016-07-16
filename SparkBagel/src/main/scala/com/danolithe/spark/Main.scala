@@ -179,7 +179,7 @@ object Main {
 
     println("finished importing YAGO Types")
     
-    for (line <- Source.fromFile("../data/Filtered/yago_supertypes_filtered_sorted_count_with_hierarchy_up_to_level13.txt")("UTF-8").getLines()) {
+    for (line <- Source.fromFile("../data/Filtered/yago_supertypes_filtered_sorted_count_with_hierarchy.txt")("UTF-8").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
       val fields = line.split(" ")
 
@@ -195,16 +195,26 @@ object Main {
       yagoIds = yagoIds + (vertexId1)
       yagoIds = yagoIds + (vertexId2)
 
-      superTypeLevels.getOrElseUpdate(vertexId1, fields(4).toInt)
-      superTypeLevels.getOrElseUpdate(vertexId2,fields(5).toInt)
+      superTypeLevels(vertexId1) = fields(4).toInt
+      superTypeLevels(vertexId2) = fields(5).toInt
+      var superTypeLevelV1 = superTypeLevels(vertexId1)
+      var superTypeLevelV2 = superTypeLevels(vertexId2)
       
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1 / fields(2).toDouble)))
+      
+      
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1 / fields(2).toDouble))
+      
       typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
-
+      
     }
 
     println("finished importing YAGO super types")
 
+    
+    superTypeLevels.foreach(println)
+    
+    println("Finished printing super type levels")
+    
    /* for (line <- Source.fromFile("../data/test1b/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
     val fields = line.split(" ")
 
@@ -432,8 +442,16 @@ object Main {
           })
         }
       })
-      
-      yagoNodeScores.toSeq.sortBy(-_._2).take(3).foreach(y => println("Score " +y + " " ))
+      /*yagoNodeScores.map(score => {
+         var elementID = nodeNames(score._1)
+         var superTypeLevel = superTypeLevels(elementID)
+         if (superTypeLevel >0){
+           (score._1, score._2 * 1/superTypeLevel)
+         }else {
+           (score._1, score._2)
+         }
+      })*/
+      yagoNodeScores.toSeq.sortBy(-_._2).take(3).foreach(y => println("Score " +y + " Level " + superTypeLevels(nodeNames(y._1))))
       })
       
       
