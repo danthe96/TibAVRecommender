@@ -1,10 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
-	pageEncoding="utf-8" import="java.sql.*"%>
+	pageEncoding="utf-8" import="java.sql.*,org.jsoup.Jsoup" %>
 
 <%
 	int[] recId = { 18564, 19017, 15907 };
 	int video_id = 16350;
 	String logs = "";
+	String title = "(Knowledge)Recommender";
 	try {
 		video_id = Integer.parseInt(request.getPathInfo().replace("/", ""));
 
@@ -17,7 +18,6 @@
 			getRecommendations.setInt(1, video_id);
 			ResultSet recommendationResult = getRecommendations.executeQuery();
 			if (!recommendationResult.first()) {
-				db_con.close();
 				logs += "No results in database\n";
 				//response.sendError(HttpServletResponse.SC_NOT_FOUND);
 				//return;
@@ -30,19 +30,29 @@
 			recommendationResult.close();
 			getRecommendations.close();
 
+		} catch (SQLException e) {
+			//response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			//return;
+			logs += "\ncaught first sql exception: ";
+			logs += e.getMessage();
+		}
+		try {
 			PreparedStatement getTitle = db_con.prepareStatement("SELECT title FROM tibav.tibvid WHERE videoid=?");
 			getTitle.setInt(1, video_id);
 			ResultSet titleResult = getTitle.executeQuery();
-			String title = titleResult.getString("title");
+			titleResult.next();
+			title = titleResult.getString("title") + " | KnowledgeRecommender";
 			titleResult.close();
 			getTitle.close();
-
-			db_con.close();
 		} catch (SQLException e) {
-			db_con.close();
 			//response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			//return;
+			logs += "\ncaught second sql exception: ";
+			logs += e.getMessage();
 		}
+		
+		db_con.close();
+		
 	} catch (NumberFormatException e) {
 		response.sendError(HttpServletResponse.SC_NOT_FOUND);
 		return;
@@ -56,7 +66,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta charset="UTF-8">
-<title><%=title%> | KnowledgeRecommender</title>
+<title><%=title%></title>
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, user-scalable=yes">
 <link rel="stylesheet" type="text/css" href="static/less.css">
@@ -235,6 +245,8 @@
 					</div>
 				</div>
 			</div>
+			DEBUG<br>
+			<%= logs %>
 
 		</footer>
 	</div>
