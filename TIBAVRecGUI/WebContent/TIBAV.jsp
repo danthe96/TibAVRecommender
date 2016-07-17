@@ -1,9 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
-	pageEncoding="utf-8" import="java.sql.*,org.jsoup.Jsoup" %>
+	pageEncoding="utf-8" import="java.sql.*,org.jsoup.Jsoup,org.jsoup.nodes.Document,org.jsoup.select.Elements" %>
 
 <%
 	int[] recId = { 18564, 19017, 15907 };
 	int video_id = 16350;
+	String yovistourl = "http://blog.yovisto.com/james-clerk-maxwell-and-the-very-first-color-photograph/";
 	String logs = "";
 	String title = "(Knowledge)Recommender";
 	try {
@@ -57,6 +58,15 @@
 		response.sendError(HttpServletResponse.SC_NOT_FOUND);
 		return;
 	}
+	
+	// YOVISTO blog article fetch & parse //
+	
+	Document doc = Jsoup.connect(yovistourl).get();
+	Elements metaOgTitle = doc.select("meta[property=og:title]");
+	Elements metaOgImage = doc.select("meta[property=og:image]");
+	String yovistotitle = metaOgTitle.attr("content");
+	String imageUrl = metaOgImage.attr("content");
+	
 %>
 
 <!DOCTYPE html>
@@ -181,6 +191,25 @@
 								<div class="clear"></div>
 							</div>
 						</div>
+						
+						<div class="searchresult-item" vocab="http://schema.org/" typeof="Article">
+							
+							<a href="<%=yovistourl%>" class="resultTitle" rel="" property="name" title="yovisto blog recommendation: <%=yovistotitle%>" lang="en">
+								<img src="<%= imageUrl %>" height="315" scrolling="no"></img>
+							</a>
+
+							<div class="searchresult-title">
+								<a href="<%=yovistourl%>" class="resultTitle" rel=""
+									property="name"
+									title="yovisto blog recommendation: <%=yovistotitle%>" lang="en"><%=yovistotitle%></a>
+							</div>
+							
+							<div class="searchresult-subline">
+								<span class="publisher">
+									<span property="publisher"></span>
+								<div class="clear"></div>
+							</div>
+						</div>
 					</div>
 				</div>
 
@@ -250,8 +279,6 @@
 
 		</footer>
 	</div>
-
-	<script src="static/main.js"></script>
 
 </body>
 </html>
