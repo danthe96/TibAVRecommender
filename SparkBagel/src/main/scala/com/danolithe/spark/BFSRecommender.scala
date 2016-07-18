@@ -19,7 +19,7 @@ object BFSRecommender {
         Double            //Edge weight
         ]) = {
     println("build pregel...")
-    graph.pregel(initialMsg, 1000, EdgeDirection.Out)(this.vprog, this.sendMsg, this.mergeMsg)
+    graph.pregel(initialMsg, 10, EdgeDirection.Out)(this.vprog, this.sendMsg, this.mergeMsg)
   }
 
   def vprog(vertexId: VertexId, value: (String, Set[(Double, List[(String, String)])], Set[Long], Boolean, String), message: (Set[(Double, List[(String, String)])], Set[Long])): (String, Set[(Double, List[(String, String)])], Set[Long], Boolean, String) = {
@@ -36,7 +36,7 @@ object BFSRecommender {
   def sendMsg(triplet: EdgeTriplet[(String, Set[(Double, List[(String, String)])], Set[Long], Boolean, String), Double]): Iterator[(VertexId, (Set[(Double, List[(String, String)])], Set[Long]))] = {
     val sourceVertex = triplet.srcAttr
 
-    if(sourceVertex._4 || !(sourceVertex._3.isEmpty || sourceVertex._3.contains(triplet.dstId) || sourceVertex._5 == "VIDEO")) {
+    if(sourceVertex._4 || !(sourceVertex._3.isEmpty || sourceVertex._3.contains(triplet.dstId) || sourceVertex._5 == "RESOURCE")) {
       Iterator((triplet.dstId.longValue(), (sourceVertex._2.map(triple => (triple._1 * triplet.attr.doubleValue(), triple._2  :+ (sourceVertex._1,sourceVertex._5))), sourceVertex._3 + triplet.srcId.longValue())))
     } else 
       Iterator.empty
