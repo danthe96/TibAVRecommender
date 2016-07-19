@@ -105,12 +105,15 @@
 	}
 	
 	// YOVISTO blog article fetch & parse //
-	
-	Document doc = Jsoup.connect(yovistourl).get();
-	Elements metaOgTitle = doc.select("meta[property=og:title]");
-	Elements metaOgImage = doc.select("meta[property=og:image]");
-	String yovistotitle = metaOgTitle.attr("content");
-	String imageUrl = metaOgImage.attr("content");
+	try {
+		Document doc = Jsoup.connect(yovistourl).get();
+		Elements metaOgTitle = doc.select("meta[property=og:title]");
+		Elements metaOgImage = doc.select("meta[property=og:image]");
+		String yovistotitle = metaOgTitle.attr("content");
+		String imageUrl = metaOgImage.attr("content");
+	} catch (Exception e) {
+		logs += "\ncouldn't fetch yovisto url";
+	}
 	
 %>
 
@@ -171,7 +174,7 @@
 							<div class="searchresult-title">
 								<a href="<%=recId[0]%>" class="resultTitle" rel=""
 									property="name"
-									title="2/4 Singular support of coherent sheaves" lang="en"><%=rec1%></a>
+									title="<%=rec1%>" lang="en"><%=rec1%></a>
 							</div>
 
 							<div class="searchresult-subline">
@@ -196,7 +199,7 @@
 							<div class="searchresult-title">
 								<a href="<%=recId[1]%>" class="resultTitle" rel=""
 									property="name"
-									title="2/4 Singular support of coherent sheaves" lang="en"><%=rec2%></a>
+									title="<%=rec2%>" lang="en"><%=rec2%></a>
 							</div>
 
 							<div class="searchresult-subline">
@@ -220,7 +223,7 @@
 							<div class="searchresult-title">
 								<a href="<%=recId[2]%>" class="resultTitle" rel=""
 									property="name"
-									title="2/4 Singular support of coherent sheaves" lang="en"><%=rec3%></a>
+									title="<%=rec3%>" lang="en"><%=rec3%></a>
 							</div>
 
 							<div class="searchresult-subline">
