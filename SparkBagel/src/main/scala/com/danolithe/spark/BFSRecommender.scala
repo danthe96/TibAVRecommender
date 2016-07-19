@@ -19,7 +19,7 @@ object BFSRecommender {
         Double            //Edge weight
         ]) = {
     println("build pregel...")
-    graph.pregel(initialMsg, 1000, EdgeDirection.Out)(this.vprog, this.sendMsg, this.mergeMsg)
+    graph.pregel(initialMsg, 100, EdgeDirection.Out)(this.vprog, this.sendMsg, this.mergeMsg)
   }
 
   def vprog(vertexId: VertexId, value: (String, Set[(Double, List[(String, String)])], Set[Long], Boolean, String), message: (Set[(Double, List[(String, String)])], Set[Long])): (String, Set[(Double, List[(String, String)])], Set[Long], Boolean, String) = {
