@@ -6,7 +6,10 @@
 	int video_id = 16350;
 	String yovistourl = "http://blog.yovisto.com/james-clerk-maxwell-and-the-very-first-color-photograph/";
 	String logs = "";
-	String title = "(Knowledge)Recommender";
+	String title = "TIB|AV Recommender System";
+	String rec1 = "";
+	String rec2 = "";
+	String rec3 = "";
 	try {
 		video_id = Integer.parseInt(request.getPathInfo().replace("/", ""));
 
@@ -42,13 +45,55 @@
 			getTitle.setInt(1, video_id);
 			ResultSet titleResult = getTitle.executeQuery();
 			titleResult.next();
-			title = titleResult.getString("title") + " | KnowledgeRecommender";
+			title = titleResult.getString("title");
 			titleResult.close();
 			getTitle.close();
 		} catch (SQLException e) {
 			//response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			//return;
 			logs += "\ncaught second sql exception: ";
+			logs += e.getMessage();
+		}
+		try {
+			PreparedStatement getTitle = db_con.prepareStatement("SELECT title FROM tibav.tibvid WHERE videoid=?");
+			getTitle.setInt(1, recId[0]);
+			ResultSet titleResult = getTitle.executeQuery();
+			titleResult.next();
+			rec1 = titleResult.getString("title");
+			titleResult.close();
+			getTitle.close();
+		} catch (SQLException e) {
+			//response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			//return;
+			logs += "\ncaught third sql exception: ";
+			logs += e.getMessage();
+		}
+		try {
+			PreparedStatement getTitle = db_con.prepareStatement("SELECT title FROM tibav.tibvid WHERE videoid=?");
+			getTitle.setInt(1, recId[1]);
+			ResultSet titleResult = getTitle.executeQuery();
+			titleResult.next();
+			rec2 = titleResult.getString("title");
+			titleResult.close();
+			getTitle.close();
+		} catch (SQLException e) {
+			//response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			//return;
+			logs += "\ncaught fourth sql exception: ";
+			logs += e.getMessage();
+		}
+		try {
+			PreparedStatement getTitle = db_con.prepareStatement("SELECT title FROM tibav.tibvid WHERE videoid=?");
+			getTitle.setInt(1, recId[2]);
+			ResultSet titleResult = getTitle.executeQuery();
+			titleResult.next();
+			rec3 = titleResult.getString("title");
+			titleResult.close();
+			getTitle.close();
+		} catch (SQLException e) {
+			//response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			//return;
+			logs += "\ncaught fifth sql exception: ";
 			logs += e.getMessage();
 		}
 		
@@ -76,7 +121,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta charset="UTF-8">
-<title><%=title%></title>
+<title><%=title + " | TIB|AV Recommender System"%></title>
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, user-scalable=yes">
 <link rel="stylesheet" type="text/css" href="static/less.css">
@@ -89,19 +134,20 @@
 </head>
 <body>
 	<div id="wrapper">
-		<header class="header-up">
+		<header class="header-up" style="border-bottom: 3px solid #af1414;">
 			<div class="wrap">
-				<span id="nav-toggle"></span> <a id="logo" href="https://av.tib.eu/"
-					title="Home"> <img src="static/TIB_Logo_AV-Portal.png"
-					alt="TIB-AV" height="105" width="357">
-				</a>
-
+				<span id="nav-toggle"></span>
+				<img src="static/TIBAVrec.png" alt="TIB|AV Recommender System" style="bottom:0;right:0;height:128px;"></img>
 
 				<div class="clear"></div>
 			</div>
 		</header>
 		<div id="content">
 			<div class="wrap">
+				<div class="detail-head">
+					<h1 property="name"><%=title%></h1>
+				</div>
+			
 				<div id="id70" style="display: none"></div>
 				<div vocab="http://schema.org/" typeof="Movie">
 					<iframe height="600" scrolling="no" style="padding-bottom: 24px;"
@@ -125,8 +171,7 @@
 							<div class="searchresult-title">
 								<a href="<%=recId[0]%>" class="resultTitle" rel=""
 									property="name"
-									title="2/4 Singular support of coherent sheaves" lang="en">Recommendation
-									1</a>
+									title="2/4 Singular support of coherent sheaves" lang="en"><%=rec1%></a>
 							</div>
 
 							<div class="searchresult-subline">
@@ -151,8 +196,7 @@
 							<div class="searchresult-title">
 								<a href="<%=recId[1]%>" class="resultTitle" rel=""
 									property="name"
-									title="2/4 Singular support of coherent sheaves" lang="en">Recommendation
-									2</a>
+									title="2/4 Singular support of coherent sheaves" lang="en"><%=rec2%></a>
 							</div>
 
 							<div class="searchresult-subline">
@@ -176,8 +220,7 @@
 							<div class="searchresult-title">
 								<a href="<%=recId[2]%>" class="resultTitle" rel=""
 									property="name"
-									title="2/4 Singular support of coherent sheaves" lang="en">Recommendation
-									3</a>
+									title="2/4 Singular support of coherent sheaves" lang="en"><%=rec3%></a>
 							</div>
 
 							<div class="searchresult-subline">
@@ -222,60 +265,12 @@
 		</div>
 		<footer>
 			<div class="wrap">
-				<div class="grid">
-					<div class="grid-w14">
-						<h5>Customer Service</h5>
-						<a class="email"
-							href="javascript:linkTo_UnCryptMailto('iwehpk6yqopkianoanreyaWpex:aq');">customerservice<span
-							class="tib-mail-a"></span>tib<span class="tib-mail-b"></span>eu
-						</a> <span class="phone">+49 511 762-8989</span> <span class="fax">+49
-							511 762-8998</span>
-					</div>
-					<div class="grid-w14">
-						<h5>Legal Notices</h5>
-						<ul>
-							<li class="footer-li"><a href="https://av.tib.eu/terms"
-								title="Terms and conditions">Terms and conditions</a></li>
-							<li class="footer-li"><a
-								href="https://av.tib.eu/terms#privacy" title="Data protection">Data
-									protection</a></li>
-
-							<li class="footer-li"><a
-								href="https://www.tib.eu/en/service/imprint/" target="_blank">Impressum</a></li>
-
-						</ul>
-					</div>
-					<div class="grid-w14">
-						<h5>Member of</h5>
-						<a href="http://www.leibniz-gemeinschaft.de/" target="_blank"><img
-							src="static/leibnizgemeinschaft.png" alt="Leibniz-Gemeinschaft"
-							height="130" width="196"></a>
-					</div>
-					<div class="grid-w14">
-						<h5>Follow us</h5>
-						<ul class="footer-social-ul">
-							<li class="footer-social-li"><a
-								href="https://www.facebook.com/TIBUB" target="_blank"
-								title="Facebook">Facebook</a></li>
-							<li class="footer-social-li"><a
-								href="https://plus.google.com/113807279920626112678"
-								target="_blank" title="google+">Google+</a></li>
-							<li class="footer-social-li"><a
-								href="https://twitter.com/tibub" target="_blank" title="Twitter">Twitter</a></li>
-							<li class="footer-social-li"><a
-								href="https://www.youtube.com/user/TIBUBnet" target="_blank"
-								title="YouTube">YouTube</a></li>
-						</ul>
-						<div class="clear"></div>
-						<ul>
-							<li class="footer-li"><a href="http://tib.eu/"
-								target="_blank" title="TIB-Portal">go to TIB-Portal</a></li>
-						</ul>
-					</div>
-				</div>
+				<div class="clear"></div>
+					<a href="https://av.tib.eu/"
+					title="Home"> <img src="static/TIB_Logo_AV-Portal.png"
+					alt="TIB-AV" height="105" width="357"></a>
+					<p style="float:right;">Julius Rudolph<br>Nils Thamm<br>Daniel Thevessen<br>Lennart Lehmann</p>
 			</div>
-			DEBUG<br>
-			<%= logs %>
 
 		</footer>
 	</div>
