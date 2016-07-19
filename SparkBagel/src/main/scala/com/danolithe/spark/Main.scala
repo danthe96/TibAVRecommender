@@ -54,7 +54,6 @@ object Main {
       System.exit(1)
     }
     //    val video_id = args(0)
-    val skip = args(0).toInt
 
     val conf = new SparkConf()
       .setAppName("KnowMin-TIBAV")
@@ -63,44 +62,40 @@ object Main {
     val sc = new SparkContext(conf)
     val edges: RDD[Edge[Double]] = input(sc)
 
-    var i = 0
     for ((video_id, vertexId) <- nodeNames) {
       if (videoIds.contains(vertexId)) {
-        if (i >= skip) {
-          print("Running pregel for Video ID " + video_id)
+        print("Running pregel for Video ID " + video_id)
 
-          // RDD[(ID, (name, Set[(path_len, path_nodecount, path_nodenames, path_type)], visited, isTarget, nodeType)))]
-          val nodes: RDD[(VertexId, (String, Set[(Double, List[(String, String)])], Set[Long], Boolean, String))] = sc.parallelize(nodeNames.toSeq.map(e => {
-            if (videoIds.contains(e._2)) {
-              (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "VIDEO"))
-            } else if (gndIds.contains(e._2)) {
-              (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "GND"))
-            } else if (dbpIds.contains(e._2)) {
-              (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "DBPEDIA"))
-            } else {
-              (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "YAGO"))
-            }
-          }))
-          val graph: Graph[(String, //Node name 
-          Set[( //Set for paths
-          Double, //Path weight
-          List[(String, String)])], //Pathlist (Name, Type)
-          Set[Long], //Set of already reached nodes
-          Boolean, //Start node
-          String), //Node type
-          Double //Edge weight
-          ] = Graph(nodes, edges)
+        // RDD[(ID, (name, Set[(path_len, path_nodecount, path_nodenames, path_type)], visited, isTarget, nodeType)))]
+        val nodes: RDD[(VertexId, (String, Set[(Double, List[(String, String)])], Set[Long], Boolean, String))] = sc.parallelize(nodeNames.toSeq.map(e => {
+          if (videoIds.contains(e._2)) {
+            (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "VIDEO"))
+          } else if (gndIds.contains(e._2)) {
+            (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "GND"))
+          } else if (dbpIds.contains(e._2)) {
+            (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "DBPEDIA"))
+          } else {
+            (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "YAGO"))
+          }
+        }))
+        val graph: Graph[(String, //Node name 
+        Set[( //Set for paths
+        Double, //Path weight
+        List[(String, String)])], //Pathlist (Name, Type)
+        Set[Long], //Set of already reached nodes
+        Boolean, //Start node
+        String), //Node type
+        Double //Edge weight
+        ] = Graph(nodes, edges)
 
-          val resultGraph = BFSRecommender.buildRecommenderGraph(graph)
-          graph.unpersist(blocking = false)
-          resultGraph.cache()
-          val bfsGraph = graph.mapVertices((vertexId, vd) => (Int.MaxValue, vd._5))
-          println("Prepared bfs graph...")
-          bfsGraph.cache()
+        val resultGraph = BFSRecommender.buildRecommenderGraph(graph)
+        graph.unpersist(blocking = false)
+        resultGraph.cache()
+        val bfsGraph = graph.mapVertices((vertexId, vd) => (Int.MaxValue, vd._5))
+        println("Prepared bfs graph...")
+        bfsGraph.cache()
 
-          output(video_id, resultGraph, bfsGraph)
-        }
-        i += 1
+        output(video_id, resultGraph, bfsGraph)
       }
     }
   }
@@ -227,7 +222,9 @@ object Main {
     println()
     println("Stärkste YAGO Types in den Pfaden:")
 
-    val fw = new FileWriter(OUTPUT_PATH + "out.csv", true)
+    val file = new File(OUTPUT_PATH+"out.csv")
+    file.mkdirs()
+    val fw = new FileWriter(file, true)
     recommendationScoresJaccardHigh.foreach(x => {
       var yagoNodeScores = HashMap[String, Double]().withDefaultValue(0.0)
       println("Video " + x._2)
