@@ -7,6 +7,7 @@
 	String yovistourl = "http://blog.yovisto.com/james-clerk-maxwell-and-the-very-first-color-photograph/";
 	String logs = "";
 	String title = "(Knowledge)Recommender";
+	String[] time = new String[3], year = new String[3], keywords = new String[3];
 	try {
 		video_id = Integer.parseInt(request.getPathInfo().replace("/", ""));
 
@@ -15,7 +16,7 @@
 		try {
 			logs += "Video ID is " + video_id + "\n";
 			PreparedStatement getRecommendations = db_con
-					.prepareStatement("SELECT VIDEO_A, VIDEO_B, score, keywords FROM rec1407 WHERE VIDEO_A=? ORDER BY score DESC LIMIT 3");
+					.prepareStatement("SELECT VIDEO_A, VIDEO_B, score, keywords, duration, year FROM rec1407 OUTER JOIN tibvid ON VIDEO_B=videoid WHERE VIDEO_A=? ORDER BY score DESC LIMIT 3");
 			getRecommendations.setInt(1, video_id);
 			ResultSet recommendationResult = getRecommendations.executeQuery();
 			if (!recommendationResult.first()) {
@@ -25,6 +26,8 @@
 			} else {
 				for (int i = 0; i < 3 && !recommendationResult.isAfterLast(); i++) {
 					recId[i] = recommendationResult.getInt(2);
+					time[i] = recommendationResult.getString(5);
+					year[i] = recommendationResult.getString(6);
 					recommendationResult.next();
 				}
 			}
@@ -38,7 +41,7 @@
 			logs += e.getMessage();
 		}
 		try {
-			PreparedStatement getTitle = db_con.prepareStatement("SELECT title FROM tibav.tibvid WHERE videoid=?");
+			PreparedStatement getTitle = db_con.prepareStatement("SELECT title, TIME(duration), year FROM tibav.tibvid WHERE videoid=?");
 			getTitle.setInt(1, video_id);
 			ResultSet titleResult = getTitle.executeQuery();
 			titleResult.next();
@@ -181,7 +184,7 @@
 							</div>
 
 							<div class="searchresult-subline">
-								<span class="i-time duration"></span> <span class="publisher">
+								<span class="i-time duration"><% %></span> <span class="publisher">
 									<span property="publisher"
 									title="Institut des Hautes Études Scientifiques (IHÉS)">Institut
 										des Hautes Études Scientifiques (IHÉS)</span>
