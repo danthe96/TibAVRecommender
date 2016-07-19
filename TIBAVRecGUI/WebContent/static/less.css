@@ -2483,6 +2483,11 @@ a {
   -o-transition: all 0.3s ease-in-out;
   transition: all 0.3s ease-in-out;
 }
+.searchresult-item img {
+  height: 315px;
+  width: 100%;
+  object-fit: cover;
+}
 a:hover {
   color: #4b4b4b;
 }
