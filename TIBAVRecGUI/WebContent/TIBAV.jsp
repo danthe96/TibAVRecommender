@@ -17,7 +17,7 @@
 		try {
 			logs += "Video ID is " + video_id + "\n";
 			PreparedStatement getRecommendations = db_con
-					.prepareStatement(" (SELECT VIDEO_A, VIDEO_B, score, keywords, IS_YOVISTO, title, TIME_FORMAT(duration, '%H %i %s'), upload_year FROM rec1407 LEFT OUTER JOIN tibvid ON SUBSTRING_INDEX(VIDEO_B, '/', - 1) = videoid WHERE VIDEO_A = ? AND IS_YOVISTO = 0 ORDER BY score DESC LIMIT 3) UNION (SELECT VIDEO_A, VIDEO_B, score, keywords, IS_YOVISTO, '', '', '' FROM rec1407 WHERE VIDEO_A = ? AND IS_YOVISTO = 1 ORDER BY score DESC LIMIT 1)");
+					.prepareStatement(" (SELECT VIDEO_A, VIDEO_B, score, keywords, IS_YOVISTO, title, TIME_FORMAT(duration, '%i:%s'), upload_year FROM rec1407 LEFT OUTER JOIN tibvid ON SUBSTRING_INDEX(VIDEO_B, '/', - 1) = videoid WHERE VIDEO_A = ? AND IS_YOVISTO = 0 ORDER BY score DESC LIMIT 3) UNION (SELECT VIDEO_A, VIDEO_B, score, keywords, IS_YOVISTO, '', '', '' FROM rec1407 WHERE VIDEO_A = ? AND IS_YOVISTO = 1 ORDER BY score DESC LIMIT 1)");
 			getRecommendations.setInt(1, video_id);
 			getRecommendations.setInt(2, video_id);
 			ResultSet recommendationResult = getRecommendations.executeQuery();
@@ -75,6 +75,7 @@
 	Elements metaOgImage = doc.select("meta[property=og:image]");
 	String yovistotitle = metaOgTitle.attr("content");
 	String imageUrl = metaOgImage.attr("content");
+
 %>
 
 <!DOCTYPE html>
@@ -134,14 +135,14 @@
 							<div class="searchresult-title">
 								<a href="<%=recId[0].substring(recId[1].lastIndexOf('/') + 1)%>"
 									class="resultTitle" rel="" property="name"
-									title="2/4 Singular support of coherent sheaves" lang="en"><%=recTitle[0]%></a>
+									title="<%=recTitle[0]%>" lang="en"><%=recTitle[0]%></a>
 							</div>
 
 							<div class="searchresult-subline">
 								<span class="i-time duration"><%= recDuration[0] %></span> <span
 									class="publisher"> <span property="publisher" title=""></span>
 								</span> <span class="language"> <span title="English">English</span>
-								</span> <span class="releaseyear"> <span title="2015"><%=recYear[0]%></span>
+								</span> <span class="releaseyear"> <span title="<%=recYear[0]%>"><%=recYear[0]%></span>
 								</span>
 								<p>Keywords: <%=recKeywords[0]%></p>
 								<div class="clear"></div>
@@ -157,16 +158,13 @@
 							<div class="searchresult-title">
 								<a href="<%=recId[1].substring(recId[1].lastIndexOf('/') + 1)%>"
 									class="resultTitle" rel="" property="name"
-									title="2/4 Singular support of coherent sheaves" lang="en"><%=recTitle[1]%></a>
+									title="<%=recTitle[1]%>" lang="en"><%=recTitle[1]%></a>
 							</div>
 
 							<div class="searchresult-subline">
-								<span class="i-time duration"><%= recDuration[1] %></span> <span
-									class="publisher"> <span property="publisher"
-									title="Institut des Hautes Études Scientifiques (IHÉS)">Institut
-										des Hautes Études Scientifiques (IHÉS)</span>
-								</span> <span class="language"> <span title="English">English</span>
-								</span> <span class="releaseyear"> <span title="2015"><%=recYear[1]%></span>
+								<span class="i-time duration"><%= recDuration[1] %></span>
+								<span class="language"> <span title="English">English</span>
+								</span> <span class="releaseyear"> <span title="<%=recYear[1]%>"><%=recYear[1]%></span>
 								</span>
 								<p>Keywords: <%=recKeywords[1]%></p>
 								<div class="clear"></div>
@@ -181,16 +179,13 @@
 							<div class="searchresult-title">
 								<a href="<%=recId[2].substring(recId[1].lastIndexOf('/') + 1)%>"
 									class="resultTitle" rel="" property="name"
-									title="2/4 Singular support of coherent sheaves" lang="en"><%=recTitle[2]%></a>
+									title="<%=recTitle[2]%>" lang="en"><%=recTitle[2]%></a>
 							</div>
 
 							<div class="searchresult-subline">
-								<span class="i-time duration"><%= recDuration[1] %></span> <span
-									class="publisher"> <span property="publisher"
-									title="Institut des Hautes Études Scientifiques (IHÉS)">Institut
-										des Hautes Études Scientifiques (IHÉS)</span>
-								</span> <span class="language"> <span title="English">English</span>
-								</span> <span class="releaseyear"> <span title="2015"><%=recYear[2]%></span>
+								<span class="i-time duration"><%= recDuration[1] %></span>
+								<span class="language"> <span title="English">English</span>
+								</span> <span class="releaseyear"> <span title="<%=recYear[2]%>"><%=recYear[2]%></span>
 								</span>
 								<p>Keywords: <%=recKeywords[2]%></p>
 								<div class="clear"></div>
@@ -235,8 +230,7 @@
 					src="static/TIB_Logo_AV-Portal.png" alt="TIB-AV" height="105"
 					width="357"></a>
 				<p style="float: right;">
-					Julius Rudolph<br>Nils Thamm<br>Daniel Thevessen<br>Lennart
-					Lehmann
+					Julius Rudolph<br>Nils Thamm<br>Daniel Thevessen<br>Lennart Lehmann
 				</p>
 			</div>
 
