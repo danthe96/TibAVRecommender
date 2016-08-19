@@ -4,6 +4,8 @@ import org.apache.spark._
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 
+import scala.collection.mutable.Set
+
 object BFSRecommender {
 
   val initialMsg = (Set((1.0, List[(String, String)]())), Set[Long]())

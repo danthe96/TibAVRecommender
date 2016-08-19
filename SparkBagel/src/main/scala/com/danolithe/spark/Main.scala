@@ -4,6 +4,7 @@ import java.util.Properties
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
+import scala.collection.mutable.Set
 
 import org.apache.log4j.Logger
 import org.apache.spark.SparkConf
