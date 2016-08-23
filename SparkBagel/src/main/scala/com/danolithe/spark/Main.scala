@@ -35,23 +35,7 @@ object Main {
     prop.getProperty("version") + "_output/"
   }
 
-  def main(args: Array[String]) {
-    if (args.length != 1) {
-      System.err.println(
-        "Should be one parameter: <video_id>")
-      System.exit(1)
-    }
-    val video_id = args(0)
-
-    val conf = new SparkConf()
-      .setAppName("KnowMin-TIBAV")
-      .setSparkHome(System.getenv("SPARK_HOME"))
-      .setJars(SparkContext.jarOfClass(this.getClass).toList)
-
-    val sc = new SparkContext(conf)
-
-    var id: Int = 0
-    var nodeNames = HashMap[String, Long]()
+   var nodeNames = HashMap[String, Long]()
     
     var videoIds = Set[Long]()
     var gndIds = Set[Long]()
@@ -65,6 +49,11 @@ object Main {
     
     
     var typeEdges = List[Edge[Double]]()
+    
+  def input(sc: SparkContext): RDD[Edge[Double]] = {
+    var id: Int = 0
+
+    
     /*for (line <- Source.fromFile("../data/Filtered/PAGE_LINKS_sorted_count.txt")("UTF-8").getLines()) {
       val fields = line.split(" ")
 
@@ -84,29 +73,6 @@ object Main {
     }
     
     println("finished importing DBPedia Links")
-*/
-    /*
-    for (line <- Source.fromFile("../data/Filtered/DBPedia_types_filtered_sorted_count.txt")("UTF-8").getLines()) {
-    //for (line <- Source.fromFile("../data/test1b/t1_types_filtered_sorted_count.txt").getLines()) {
-      val fields = line.split(" ")
-
-      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
-        id += 1
-        id - 1
-      })
-      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
-        id += 1
-        id - 1
-      })
-      
-      dboIds = dboIds + (vertexId2)
-      dbpIds = dbpIds + (vertexId1)
-      
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1.0/3.0)*1.0))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0/fields(2).toDouble))
-    }
-    
-    println("finished importing DBPedia Types")
 */
     for (line <- Source.fromFile("../data/Filtered/GND_DBPEDIA_filtered_sorted_count.txt")("UTF-8").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_gnd_dbp_filtered_sorted_count.txt")("UTF-8").getLines()) {
@@ -178,7 +144,6 @@ object Main {
     println("finished importing YOVISTO-DBP")
     
     
-
     for (line <- Source.fromFile("../data/Filtered/merge_dbp_yago_count.txt")("UTF-8").getLines()) {
     //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
       val fields = line.split(" ")
@@ -232,21 +197,27 @@ object Main {
 
     println("finished importing YAGO super types")
     
-   /* for (line <- Source.fromFile("../data/test1b/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
-    val fields = line.split(" ")
-
-    val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
-        id += 1
-        id - 1
-      })
-      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
-        id += 1
-        id - 1
-      })
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 0.5 * (1.0/fields(2).toDouble)))
-    }*/
-    
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
+    edges
+  }  
+  
+  def main(args: Array[String]) {
+    if (args.length != 1) {
+      System.err.println(
+        "Should be one parameter: <video_id>")
+      System.exit(1)
+    }
+    val video_id = args(0)
+
+    val conf = new SparkConf()
+      .setAppName("KnowMin-TIBAV")
+      .setSparkHome(System.getenv("SPARK_HOME"))
+      .setJars(SparkContext.jarOfClass(this.getClass).toList)
+
+    val sc = new SparkContext(conf)
+
+    
+    var edges: RDD[Edge[Double]] = input(sc)
 
     // RDD[(ID, (name, Set[(path_len, path_nodecount, path_nodenames, path_type)], visited, isTarget, nodeType)))]
     val nodes: RDD[(VertexId, (String, Set[(Double, List[(String, String)])], Set[Long], Boolean, String))] = sc.parallelize(nodeNames.toSeq.map (e => {
@@ -384,8 +355,8 @@ object Main {
       jaccardSimilarityA/jaccardSimilarityB
     })
     val durchschnitt = (jaccard.aggregate(0.0)({ (sum, ch) => sum + ch }, { (p1, p2) => p1 + p2 }))/jaccard.size.toDouble
-    var recommendationScoresJaccardHigh = recommendationScores.filter(score => jaccard(recommendationScores.indexOf(score)) > durchschnitt)
-    var recommendationScoresJaccardLow = recommendationScores.filter(score => jaccard(recommendationScores.indexOf(score)) <= durchschnitt)
+    var recommendationScoresJaccardHigh = recommendationScores.filter(score => jaccard(recommendationScores.indexOf(score)) >= durchschnitt)
+    var recommendationScoresJaccardLow = recommendationScores.filter(score => jaccard(recommendationScores.indexOf(score)) < durchschnitt)
     
     
     
@@ -502,16 +473,16 @@ object Main {
     recommendationScoresYovisto.indices.foreach(i => { println((i + 1) + ". " + recommendationScoresYovisto(i)._2 + ", Score: " + recommendationScoresYovisto(i)._3) })
     
     var recommendationScoresFilteredYovisto: Array[(Long, String, Double)] = recommendationScoresYovisto.map(node => (node._1, node._2, node._3));
-     println()
     println()
-    println("Applying Jaccard Similarity...")
+    println()
+    println("Applying Jaccard Similarity for Yovisto Scores...")
     
     val bfsGraphYovisto = graph.mapVertices((vertexId, vd)  => (Int.MaxValue, vd._5))
     println("Prepared bfs graph...")
     
     bfsGraphYovisto.cache()
     
-    val sourceRDDYovisto = BFS.buildBfsGraph(bfsGraph.mapVertices((vertexId, vd) => {
+    val sourceRDDYovisto = BFS.buildBfsGraph(bfsGraphYovisto.mapVertices((vertexId, vd) => {
       if(vertexId != nodeNames.get(video_id).get)
         vd
       else {
@@ -536,23 +507,23 @@ object Main {
         }
       })).vertices.filter(vertexVal => vertexVal._2._1 != Int.MaxValue)
       
-      val jaccardSimilarityA : Double = (sourceRDD.intersection(targetRDD)).count.toDouble
-      val jaccardSimilarityB : Double = (sourceRDD.union(targetRDD)).count.toDouble
+      val jaccardSimilarityA : Double = (sourceRDDYovisto.intersection(targetRDD)).count.toDouble
+      val jaccardSimilarityB : Double = (sourceRDDYovisto.union(targetRDD)).count.toDouble
       println("Jaccard Similarity of " + item._2 + ": " + (jaccardSimilarityA/jaccardSimilarityB))
       jaccardSimilarityA/jaccardSimilarityB
     })
-    val durchschnittYovisto = (jaccard.aggregate(0.0)({ (sum, ch) => sum + ch }, { (p1, p2) => p1 + p2 }))/jaccard.size.toDouble
-    var recommendationScoresJaccardHighYovisto = recommendationScoresYovisto.filter(score => jaccard(recommendationScoresYovisto.indexOf(score)) > durchschnitt)
-    var recommendationScoresJaccardLowYovisto = recommendationScoresYovisto.filter(score => jaccard(recommendationScoresYovisto.indexOf(score)) <= durchschnitt)
+    val durchschnittYovisto = (jaccardYovisto.aggregate(0.0)({ (sum, ch) => sum + ch }, { (p1, p2) => p1 + p2 }))/jaccardYovisto.size.toDouble
+    var recommendationScoresJaccardHighYovisto = recommendationScoresYovisto.filter(score => jaccardYovisto(recommendationScoresYovisto.indexOf(score)) >= durchschnittYovisto)
+    var recommendationScoresJaccardLowYovisto = recommendationScoresYovisto.filter(score => jaccardYovisto(recommendationScoresYovisto.indexOf(score)) < durchschnittYovisto)
     
     
     
     
-    println()
+   /* println()
     println()
     println("Scores:")    
     
-    recommendationScoresFilteredYovisto.indices.foreach(i => { println((i + 1) + ". " + recommendationScoresFilteredYovisto(i)._2 + ", Score: " + recommendationScoresFilteredYovisto(i)._3) })
+    recommendationScoresFilteredYovisto.indices.foreach(i => { println((i + 1) + ". " + recommendationScoresFilteredYovisto(i)._2 + ", Score: " + recommendationScoresFilteredYovisto(i)._3) })*/
     println()
     println()
     println("Scores with Jaccard-Filtering:") 
@@ -578,7 +549,7 @@ object Main {
           var thirdElementName = z._2(0)._1
           var thirdElementId = nodeNames(thirdElementName)
           if (dbpIds.contains(thirdElementId)){
-            dbpNodeScoresForStartVid(thirdElementName) += z._1
+            dbpNodeScoresForStartVidYovisto(thirdElementName) += z._1
           }
           
         } 
@@ -652,10 +623,9 @@ object Main {
       })*/
       yagoNodeScores.toSeq.sortBy(-_._2).take(3).foreach(y => println("Score " +y + " Level " + superTypeLevels(nodeNames(y._1))))
       })
-      println(yagoIds.size)
-      println(dbpIds.size)
-      println(yagoIds.size)
-      println(yovistoIds.size)
+      println("YAGO IDS SIZE: " + yagoIds.size)
+      println("DBP IDS SIZE: " + dbpIds.size)
+      println("YOVISTO IDS SIZE: " + yovistoIds.size)
       
       
     
