@@ -16,7 +16,7 @@ def count_superType_level(line, typeMap, mapOfSubtypesForType):
 		return typeMap[line.split(' ')[0]]
 
 print("started")
-f_in = open('yago_supertypes.ttl', 'r')
+f_in = open('merge_super_types.txt', 'r')
 f_out = open('yago_supertypes_filtered_sorted_count_with_hierarchy.txt', 'wb')
 typeToTypeList = list(f_in)
 leftTypeList = []
