@@ -44,7 +44,7 @@ object Main {
     var dboIds = Set [Long]()
     var linkToIds = Set [Long]()
     var yovistoIds = Set[Long]()
-
+    var subjectIds = Set[Long]()
     var superTypeLevels = HashMap[Long, Int]()
     
     
@@ -197,6 +197,29 @@ object Main {
 
     println("finished importing YAGO super types")
     
+     for (line <- Source.fromFile("../data/Filtered/en_subjects_count.txt")("UTF-8").getLines()) {
+    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
+      val fields = line.split(" ")
+
+      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+      
+      dbpIds = dbpIds + (vertexId1)
+      subjectIds = subjectIds + (vertexId2)
+      
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1.0 / fields(2).toDouble))//(1.0/3.0)*(1 / fields(2).toDouble)))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0 / fields(3).toDouble))
+
+    }
+
+    println("finished importing DBpedia Subjects")
+    
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
     edges
   }  
@@ -227,6 +250,8 @@ object Main {
            (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "GND"))
         } else if (dbpIds.contains(e._2)){
           (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "DBPEDIA"))
+        } else if (subjectIds.contains(e._2)){
+          (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "SUBJECT"))
         } else{
           (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "YAGO"))
         }
