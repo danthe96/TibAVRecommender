@@ -3,7 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>knowmin-tibav</groupId>
 	<artifactId>knowmin-tibav</artifactId>
-	<version>0.6.6</version>
+<<<<<<< HEAD
+	<version>0.6.3</version>
+=======
+	<version>0.4.8</version>
+>>>>>>> master
 	<name>${project.artifactId}</name>
 	<inceptionYear>2010</inceptionYear>
 

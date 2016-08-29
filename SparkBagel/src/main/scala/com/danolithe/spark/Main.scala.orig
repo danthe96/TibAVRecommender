@@ -35,6 +35,7 @@ object Main {
     prop.getProperty("version") + "_output/"
   }
 
+<<<<<<< HEAD
    var nodeNames = HashMap[String, Long]()
     
     var videoIds = Set[Long]()
@@ -44,7 +45,7 @@ object Main {
     var dboIds = Set [Long]()
     var linkToIds = Set [Long]()
     var yovistoIds = Set[Long]()
-    var subjectIds = Set[Long]()
+
     var superTypeLevels = HashMap[Long, Int]()
     
     
@@ -197,33 +198,23 @@ object Main {
 
     println("finished importing YAGO super types")
     
-     for (line <- Source.fromFile("../data/Filtered/en_subjects_count.txt")("UTF-8").getLines()) {
-    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
-      val fields = line.split(" ")
-
-      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
-        id += 1
-        id - 1
-      })
-      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
-        id += 1
-        id - 1
-      })
-      
-      dbpIds = dbpIds + (vertexId1)
-      subjectIds = subjectIds + (vertexId2)
-      
-      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1.0 / fields(2).toDouble))//(1.0/3.0)*(1 / fields(2).toDouble)))
-      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0 / fields(3).toDouble))
-
-    }
-
-    println("finished importing DBpedia Subjects")
-    
     var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
     edges
   }  
   
+=======
+  var nodeNames = HashMap[String, Long]()
+    
+  var videoIds = Set[Long]()
+  var gndIds = Set[Long]()
+  var dbpIds = Set[Long]()
+  var yagoIds = Set[Long]()
+  var dboIds = Set [Long]()
+  var linkToIds = Set [Long]()
+  var superTypeLevels = HashMap[Long, Int]()
+  var typeEdges = List[Edge[Double]]()
+
+>>>>>>> master
   def main(args: Array[String]) {
     if (args.length != 1) {
       System.err.println(
@@ -238,7 +229,10 @@ object Main {
       .setJars(SparkContext.jarOfClass(this.getClass).toList)
 
     val sc = new SparkContext(conf)
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
     
     var edges: RDD[Edge[Double]] = input(sc)
 
@@ -250,8 +244,6 @@ object Main {
            (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "GND"))
         } else if (dbpIds.contains(e._2)){
           (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "DBPEDIA"))
-        } else if (subjectIds.contains(e._2)){
-          (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "SUBJECT"))
         } else{
           (e._2, (e._1, Set[(Double, List[(String, String)])](), Set[Long](), e._1 == video_id, "YAGO"))
         }
@@ -435,17 +427,24 @@ object Main {
       var dbpNodeScores = HashMap[String, Double]().withDefaultValue(0.0)
       println("Video " + x._2)
       x._4.map(z => {
+        /*println()
+        print("Path with weight " + z._1 + " " )
+        z._2.foreach(y => {
+          var entityID = nodeNames(y._1)
+          print(y._2 + "("+y._1+")" + ", ")
+        })*/
         if(z._2.size>=3){
           
           var thirdLastElementName = z._2.reverse(1)._1
-          var thirdLastElementId = nodeNames(thirdLastElementName)
+          var thirdLastElementType = z._2.reverse(1)._2
+          //var thirdLastElementId = nodeNames(thirdLastElementName)
           //println("third last element " + thirdLastElementName + " " + thirdLastElementId)
-          if (dbpIds.contains(thirdLastElementId)){
+          if (thirdLastElementType =="DBPEDIA"){
             dbpNodeScores(thirdLastElementName) += z._1
           }
           
         } 
-      } )
+      })
       
       dbpNodeScores.toSeq.sortBy(-_._2).take(3).foreach(y => println("Score " +y + " " ))
       })
@@ -463,12 +462,13 @@ object Main {
           
           var yagoTypesInPath = z._2.filter(y => {
             var elementID = nodeNames(y._1)
-            if (yagoIds.contains(elementID)){
+            /*if (yagoIds.contains(elementID)){
               //print("Type level of " + elementID + ": "+ superTypeLevels(elementID))
               superTypeLevels(elementID)< 2
             }else {
               false
-            }
+            }*/
+            yagoIds.contains(elementID)
           })
           var dboTypesInPath = z._2.filter(y => {
             var elementID = nodeNames(y._1)
@@ -488,7 +488,7 @@ object Main {
            (score._1, score._2)
          }
       })*/
-      yagoNodeScores.toSeq.sortBy(-_._2).take(3).foreach(y => println("Score " +y + " Level " + superTypeLevels(nodeNames(y._1))))
+      yagoNodeScores.toSeq.sortBy(-_._2).take(3).foreach(y => println("Score " +y /*+ " Level " + superTypeLevels(nodeNames(y._1))*/))
       })
       
     println()
@@ -665,4 +665,162 @@ object Main {
     //    result.edges.saveAsTextFile(OUTPUT_PATH + "edges")
 
   }
+  
+  def input(sc: SparkContext): RDD[Edge[Double]] = {
+    var id: Int = 0
+
+    /*for (line <- Source.fromFile("../data/Filtered/PAGE_LINKS_sorted_count.txt")("UTF-8").getLines()) {
+      val fields = line.split(" ")
+
+      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+      
+      linkToIds = linkToIds + (vertexId2)
+      
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble / fields(3).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
+    }
+    
+    println("finished importing DBPedia Links")
+*/
+    /*
+    for (line <- Source.fromFile("../data/Filtered/DBPedia_types_filtered_sorted_count.txt")("UTF-8").getLines()) {
+    //for (line <- Source.fromFile("../data/test1b/t1_types_filtered_sorted_count.txt").getLines()) {
+      val fields = line.split(" ")
+
+      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+      
+      dboIds = dboIds + (vertexId2)
+      dbpIds = dbpIds + (vertexId1)
+      
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1.0/3.0)*1.0))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0/fields(2).toDouble))
+    }
+    
+    println("finished importing DBPedia Types")
+*/
+    for (line <- Source.fromFile("../data/Filtered/GND_DBPEDIA_filtered_sorted_count.txt")("UTF-8").getLines()) {
+      //for (line <- Source.fromFile("../data/test1b/t1_gnd_dbp_filtered_sorted_count.txt")("UTF-8").getLines()) {
+      val fields = line.split(" ")
+
+      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+
+      gndIds = gndIds + (vertexId1)
+      dbpIds = dbpIds + (vertexId2)
+
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1.0))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1.0))
+      //typeEdges :+
+    }
+
+    println("finished importing GND-DBPedia")
+
+    for (line <- Source.fromFile("../data/Filtered/tib_gnd_sorted_count_with_gnd.txt")("UTF-8").getLines()) {
+      //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
+      val fields = line.split(" ")
+
+      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+
+      videoIds = videoIds + (vertexId1)
+      gndIds = gndIds + (vertexId2)
+
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, fields(2).toDouble / fields(3).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, fields(2).toDouble / fields(3).toDouble))
+
+    }
+
+    println("finished importing TIB-GND")
+
+    for (line <- Source.fromFile("../data/Filtered/yago_types_filtered_count.txt")("UTF-8").getLines()) {
+      //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
+      val fields = line.split(" ")
+
+      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+
+      dbpIds = dbpIds + (vertexId1)
+      yagoIds = yagoIds + (vertexId2)
+
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, (1 / fields(2).toDouble))) //(1.0/3.0)*(1 / fields(2).toDouble)))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
+
+    }
+
+    println("finished importing YAGO Types")
+    /*
+    for (line <- Source.fromFile("../data/Filtered/yago_supertypes_filtered_sorted_count.txt")("UTF-8").getLines()) {
+    //for (line <- Source.fromFile("../data/test1b/t1_tib_gnd_filtered_sorted_count_1.txt")("UTF-8").getLines()) {
+      val fields = line.split(" ")
+
+      val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+      
+      yagoIds = yagoIds + (vertexId1)
+      yagoIds = yagoIds + (vertexId2)
+
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 1 / fields(2).toDouble))
+      typeEdges = typeEdges :+ (Edge(vertexId2, vertexId1, 1 / fields(3).toDouble))
+
+    }
+
+    println("finished importing YAGO super types")
+*/
+    /* for (line <- Source.fromFile("../data/test1b/t1_pagelinks_filtered_sorted_count.txt").getLines()) {
+    val fields = line.split(" ")
+
+    val vertexId1 = nodeNames.getOrElseUpdate(fields(0), {
+        id += 1
+        id - 1
+      })
+      val vertexId2 = nodeNames.getOrElseUpdate(fields(1), {
+        id += 1
+        id - 1
+      })
+      typeEdges = typeEdges :+ (Edge(vertexId1, vertexId2, 0.5 * (1.0/fields(2).toDouble)))
+    }*/
+
+    var edges: RDD[Edge[Double]] = sc.parallelize(typeEdges)
+    edges
+  }
+
+  
 }
