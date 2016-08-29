@@ -1,7 +1,0 @@
-gnd2 dbp1
-gnd3 dbp2
-gnd4 dbp3
-gnd5 dbp8
-gnd6 dbp5
-gnd7 dbp6
-gnd8 dbp9

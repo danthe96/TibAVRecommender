@@ -1,4 +1,0 @@
-vid1 gnd1
-vid1 gnd3
-vid2 gnd2
-vid3 gnd4
