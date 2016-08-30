@@ -8,7 +8,7 @@
 	int video_id = 16350;
 	String logs = "";
 	String title = "TIB|AV Recommender System";
-	String[] recTitle = new String[3], recDuration = new String[3], recYear = new String[3], recKeywords = new String[3];
+	String[] recTitle = new String[3], recDuration = new String[3], recYear = new String[3], recKeywords = new String[12], recKeyLinks = new String[12];
 	try {
 		video_id = Integer.parseInt(request.getPathInfo().replace("/", ""));
 
@@ -28,7 +28,15 @@
 			} else {
 				for (int i = 0; i < 4 && !recommendationResult.isAfterLast(); i++) {
 					recId[i] = recommendationResult.getString(2);
-					recKeywords[i] = recommendationResult.getString(4);
+					String[] keywords = recommendationResult.getString(4).split("[,;]");
+					logs += keywords[0];
+					recKeyLinks[i*3] = keywords[0].substring(1);
+					recKeyLinks[i*3+1] = keywords[2].substring(1);
+					recKeyLinks[i*3+2] = keywords[4].substring(1);
+					recKeywords[i*3] = recKeyLinks[i*3].substring(28).replace("_", " ");
+					recKeywords[i*3+1] = recKeyLinks[i*3+1].substring(28).replace("_", " ");
+					recKeywords[i*3+2] = recKeyLinks[i*3+2].substring(28).replace("_", " ");
+					
 					if (!recommendationResult.getBoolean(5)) {
 						recTitle[i] = recommendationResult.getString(6);
 						recDuration[i] = recommendationResult.getString(7);
@@ -139,12 +147,8 @@
 							</div>
 
 							<div class="searchresult-subline">
-								<span class="i-time duration"><%= recDuration[0] %></span> <span
-									class="publisher"> <span property="publisher" title=""></span>
-								</span> <span class="language"> <span title="English">English</span>
-								</span> <span class="releaseyear"> <span title="<%=recYear[0]%>"><%=recYear[0]%></span>
-								</span>
-								<p>Keywords: <%=recKeywords[0]%></p>
+								<span class="i-time duration"><%= recDuration[0] %></span>
+								<p>Keywords: <a href="<%=recKeyLinks[0]%>"><%=recKeywords[0]%></a>, <a href="<%=recKeyLinks[1]%>"><%=recKeywords[1]%></a>, <a href="<%=recKeyLinks[2]%>"><%=recKeywords[2]%></a></p>
 								<div class="clear"></div>
 							</div>
 						</div>
@@ -163,10 +167,7 @@
 
 							<div class="searchresult-subline">
 								<span class="i-time duration"><%= recDuration[1] %></span>
-								<span class="language"> <span title="English">English</span>
-								</span> <span class="releaseyear"> <span title="<%=recYear[1]%>"><%=recYear[1]%></span>
-								</span>
-								<p>Keywords: <%=recKeywords[1]%></p>
+								<p>Keywords: <a href="<%=recKeyLinks[3]%>"><%=recKeywords[3]%></a>, <a href="<%=recKeyLinks[4]%>"><%=recKeywords[4]%></a>, <a href="<%=recKeyLinks[5]%>"><%=recKeywords[5]%></a></p>
 								<div class="clear"></div>
 							</div>
 						</div>
@@ -184,10 +185,7 @@
 
 							<div class="searchresult-subline">
 								<span class="i-time duration"><%= recDuration[1] %></span>
-								<span class="language"> <span title="English">English</span>
-								</span> <span class="releaseyear"> <span title="<%=recYear[2]%>"><%=recYear[2]%></span>
-								</span>
-								<p>Keywords: <%=recKeywords[2]%></p>
+								<p>Keywords: <a href="<%=recKeyLinks[6]%>"><%=recKeywords[6]%></a>, <a href="<%=recKeyLinks[7]%>"><%=recKeywords[7]%></a>, <a href="<%=recKeyLinks[8]%>"><%=recKeywords[8]%></a></p>
 								<div class="clear"></div>
 							</div>
 						</div>
@@ -209,7 +207,7 @@
 							</div>
 
 							<div class="searchresult-subline">
-								<span class="publisher"> <span property="publisher"></span>
+									<p>Keywords: <a href="<%=recKeyLinks[9]%>"><%=recKeywords[9]%></a>, <a href="<%=recKeyLinks[10]%>"><%=recKeywords[10]%></a>, <a href="<%=recKeyLinks[11]%>"><%=recKeywords[11]%></a></p>
 									<div class="clear"></div>
 							</div>
 						</div>
