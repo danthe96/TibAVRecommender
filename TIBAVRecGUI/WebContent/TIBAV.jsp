@@ -3,12 +3,13 @@
 	import="java.sql.*,org.jsoup.Jsoup,org.jsoup.nodes.Document,org.jsoup.select.Elements"%>
 
 <%
-	String[] recId = { "http://av.tib.eu/player/18564", "http://av.tib.eu/player/19017", "http://av.tib.eu/player/15907",
-			"http://blog.yovisto.com/james-clerk-maxwell-and-the-very-first-color-photograph/" };
-	int video_id = 16350;
+	String[] recId = {"", "", "", ""};
+	int video_id;
+	String yovistotitle = "No recommendation in db", imageUrl = "";
 	String logs = "";
 	String title = "TIB|AV Recommender System";
-	String[] recTitle = new String[3], recDuration = new String[3], recYear = new String[3], recKeywords = new String[12], recKeyLinks = new String[12];
+	String[] recDuration = new String[3], recYear = new String[3], recKeywords = new String[12], recKeyLinks = new String[12];
+	String[] recTitle = {"No recommendation in db", "No recommendation in db", "No recommendation in db"};
 	try {
 		video_id = Integer.parseInt(request.getPathInfo().replace("/", ""));
 
@@ -77,12 +78,13 @@
 	}
 
 	// YOVISTO blog article fetch & parse //
-
-	Document doc = Jsoup.connect(recId[3]).get();
-	Elements metaOgTitle = doc.select("meta[property=og:title]");
-	Elements metaOgImage = doc.select("meta[property=og:image]");
-	String yovistotitle = metaOgTitle.attr("content");
-	String imageUrl = metaOgImage.attr("content");
+	if(recId[3] != null && !recId[3].isEmpty()) {
+		Document doc = Jsoup.connect(recId[3]).get();
+		Elements metaOgTitle = doc.select("meta[property=og:title]");
+		Elements metaOgImage = doc.select("meta[property=og:image]");
+		yovistotitle = metaOgTitle.attr("content");
+		imageUrl = metaOgImage.attr("content");
+	}
 
 %>
 
@@ -213,6 +215,7 @@
 						</div>
 					</div>
 				</div>
+				Due to restrictions on the side of the TIB|AV-Portal, some videos can not be embedded here.
 
 				<div id="searchresult-overlay"></div>
 			</div>
@@ -225,8 +228,8 @@
 			<div class="wrap">
 				<div class="clear"></div>
 				<a href="https://av.tib.eu/" title="Home"> <img
-					src="static/TIB_Logo_AV-Portal.png" alt="TIB-AV" height="105"
-					width="357"></a>
+					src="static/TIB_Logo_AV-Portal.png" alt="TIB-AV" height="100"
+					width="340"></a>
 				<p style="float: right;">
 					Julius Rudolph<br>Nils Thamm<br>Daniel Thevessen<br>Lennart Lehmann
 				</p>
